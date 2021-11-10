@@ -60,7 +60,7 @@
 #define CPHTRACEON(T)            cphTraceOn(T);
 #define CPHTRACEENTRY(T)         cphTraceEntry(T,FUNCTION_NAME);
 #define CPHTRACEEXIT(T)          cphTraceExit(T,FUNCTION_NAME);
-#define CPHTRACEMSG(T,...)       cphTraceMsg(T,FUNCTION_NAME,__VA_ARGS__);
+#define CPHTRACEMSG(T, ...)       cphTraceMsg(T,FUNCTION_NAME,__VA_ARGS__);
 #define CPHTRACELINE(T,Tr,L)     cphTraceLine(T,Tr,L);
 #define CPHTRACEREF(V,T)         CPH_TRACE *V = T;
 #else // #ifdef CPH_DOTRACE
@@ -70,7 +70,7 @@
 #define CPHTRACEON(T)
 #define CPHTRACEENTRY(T)
 #define CPHTRACEEXIT(T)
-#define CPHTRACEMSG(T,...)
+#define CPHTRACEMSG(T, ...)
 #define CPHTRACELINE(T,Tr,L)
 #define CPHTRACEREF(V,T)
 #endif // #ifdef CPH_DOTRACE ... #else

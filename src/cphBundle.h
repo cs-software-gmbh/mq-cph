@@ -36,6 +36,8 @@
 #define CPH_DIRSEP '\\'
 #elif defined(CPH_UNIX)
 #define CPH_DIRSEP '/'
+#elif defined(CPH_HPNS)
+#define CPH_DIRSEP '/'
 #endif
 
 /* Definition of the CPH_BUNDLE structure */

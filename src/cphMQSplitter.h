@@ -209,6 +209,14 @@ typedef void (MQENTRY *MQDLTMHPTR) (
 
 #define EPTYPE void *
 
+#elif defined(CPH_HPNS)
+
+#define MQLOCAL_NAME "libmqm_r.so"
+#define MQREMOTE_NAME "libmqic_r.so"
+#define MQREMOTE_NAME_IS "libmqdc_r.so"
+
+#define EPTYPE void *
+
 #endif
 
 /*********************************************************************/

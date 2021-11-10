@@ -30,6 +30,12 @@
 
 #if (defined(CPH_IBMI) && !defined(ISUPPORT_CPP11)) || defined(CPH_OSX)
 #include <sys/time.h>
+#elif defined(__TANDEM)
+#include <cextdecs.h>
+#define NANOSEC_PER_SEC ((long long)(1000*1000*1000))
+#define NANOSEC_PER_MICROSEC ((long long)(1000))
+#define MICROSEC_PER_SEC ((long long)(1000*1000))
+#define MICROSEC_PER_MILLISEC ((long long)(1000))
 #endif
 
 #ifdef ISUPPORT_CPP11
@@ -172,6 +178,13 @@ absTime durationToAbs(int millis){
   gettimeofday(&tv, NULL);
   abs.tv_sec = tv.tv_sec;
   abs.tv_nsec = tv.tv_usec*1000;
+#elif defined(__TANDEM)
+  {
+    long long microsec_now = JULIANTIMESTAMP();
+    microsec_now += (millis * MICROSEC_PER_MILLISEC);
+    abs.tv_sec = (long)(microsec_now / MICROSEC_PER_SEC);
+    abs.tv_nsec = (long)((NANOSEC_PER_MICROSEC) * (microsec_now % MICROSEC_PER_SEC));
+  } 
 #else //#ifdef CPH_IBMI
   clock_gettime(CLOCK_REALTIME, &abs);
 #endif //#ifdef CPH_IBMI

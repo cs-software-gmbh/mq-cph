@@ -390,9 +390,12 @@ int cphTraceListThreads(CPH_TRACE *pTrace) {
         do {
             CPH_ARRAYLISTITEM *pItem = cphListIteratorNext(pIterator);
             CPH_TRACETHREAD *pTraceThread = pItem->item;
-
-            printf("   pItem: %p, pTraceThread: %p, pTraceThread->threadId: %d.\n", pItem, pTraceThread, (int)pTraceThread->threadId);
-
+#if defined(CPH_HPNS)
+            printf("   pItem: %p, pTraceThread: %p, pTraceThread->threadId: %p,%d,%d.\n", pItem, pTraceThread,
+              (void*)pTraceThread->threadId.field1, (int)pTraceThread->threadId.field2, (int)pTraceThread->threadId.field3);
+#else
+            printf("   pItem: %p, pTraceThread: %p, pTraceThread->threadId: %p,%d,%d.\n", pItem, pTraceThread, (int)pTraceThread->threadId);
+#endif
         } while (cphListIteratorHasNext(pIterator));
         cphListIteratorFree(&pIterator);
     }
@@ -422,7 +425,13 @@ CPH_TRACETHREAD *cphTraceLookupTraceThread(CPH_TRACE *pTrace, cph_pthread_t thre
         CPH_ARRAYLISTITEM *pItem = cphListIteratorNext(pIterator);
         pTraceThread = pItem->item;
 
+#if defined(CPH_HPNS)
+        if (   threadId.field1 == pTraceThread->threadId.field1
+            && threadId.field2 == pTraceThread->threadId.field2
+            && threadId.field3 == pTraceThread->threadId.field3) {
+#else
         if (threadId == pTraceThread->threadId) {
+#endif
             found = CPHTRUE;
             break;
         }

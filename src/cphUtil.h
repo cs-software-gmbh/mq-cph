@@ -47,6 +47,10 @@
 #elif defined(AMQ_AS400) || defined(AMQ_MACOS)
 #include <sys/time.h>
 #define CPH_TIME struct timeval
+#elif defined(__TANDEM)
+#include <time.h>
+#include <sys/time.h>
+#define CPH_TIME struct timeval
 #else
 #include <time.h>
 #define CPH_TIME struct timespec
@@ -63,6 +67,8 @@
 #elif defined(AMQ_MACOS)
   #define cph_pthread_t uint64_t
 #elif defined(CPH_UNIX)
+  #define cph_pthread_t pthread_t
+#elif defined(CPH_HPNS)
   #define cph_pthread_t pthread_t
 #else
   #error "Don't know how to define pthread_t on this platform"

@@ -47,6 +47,11 @@ typedef struct _cphspinlock {
 #include <pthread.h>
 #define CPH_SPINLOCK  pthread_mutex_t
 
+#elif defined(CPH_HPNS)
+
+#include <pthread.h>
+#define CPH_SPINLOCK  pthread_mutex_t
+
 #endif
 
 /* Function prototypes */

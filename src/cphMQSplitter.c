@@ -42,7 +42,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#ifdef CPH_UNIX
+#if defined(CPH_UNIX) || defined(CPH_HPNS)
    #include <sys/types.h>
    #include <errno.h>
    #if defined(AMQ_AS400)
@@ -745,7 +745,7 @@ long cphMQSplitterLoadMQ(CPH_LOG *pLog, Pmq_epList ep, int isClient)
   return rc;
 }
 
-#elif defined(CPH_UNIX)
+#elif defined(CPH_UNIX) || defined(CPH_HPNS)
 
 
 long cphMQSplitterLoadMQ(CPH_LOG *pLog, Pmq_epList ep, int isClient)

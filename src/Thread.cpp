@@ -12,7 +12,7 @@
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
- * limitations under the License.
+ * limitations under the License
  */
 /*
  * Contributors:
@@ -140,6 +140,9 @@ bool Thread::start(){
     id = (uint64_t) pthread_mach_thread_np(tid);
 #elif defined(CPH_IBMI)
     id = ((uint64_t) tid.reservedHiId << (sizeof(unsigned int) << 3)) + tid.reservedLoId;
+#elif defined(CPH_HPNS)
+    // TODO check
+    id = ((uint64_t) tid.field3 << (sizeof(unsigned int) << 3)) + tid.field2;
 #else
     id = (uint64_t) tid;
 #endif
@@ -183,6 +186,9 @@ uint64_t Thread::getCurrentThreadId(){
   return ((uint64_t) tid.reservedHiId << (sizeof(unsigned int) << 3)) + tid.reservedLoId;
 #elif defined(CPH_OSX)
   return (uint64_t) pthread_mach_thread_np(pthread_self());
+#elif defined(CPH_HPNS)
+  pthread_t tid=pthread_self();
+  return (uint64_t) ((uint64_t) tid.field3 << (sizeof(unsigned int) << 3)) + tid.field2;
 #elif defined(CPH_UNIX)
   return (uint64_t) pthread_self();
 #else

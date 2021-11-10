@@ -26,6 +26,10 @@
 /*                                                                             */
 /*******************************************************************************/
 
+#if defined(__TANDEM)
+#include <cextdecs.h>
+#endif
+
 #include "MQIOpts.hpp"
 #include <string>
 #include <cstring>
@@ -214,9 +218,14 @@ MQIOpts::MQIOpts(CPH_CONFIG* pConfig, bool putter, bool getter, bool reconnector
 	   cd = protoCD;
 	   protoCNO.ClientConnPtr = &cd;
     } else {
- 	   protoCNO.Version = MQCNO_VERSION_6;
-       protoCNO.CCDTUrlPtr = ccdtURL;
-	   protoCNO.CCDTUrlLength = (MQLONG)strlen(ccdtURL);
+      /*
+      protoCNO.Version = MQCNO_VERSION_6;
+      protoCNO.CCDTUrlPtr = ccdtURL;
+      protoCNO.CCDTUrlLength = (MQLONG)strlen(ccdtURL);
+      */
+      /* NonStop MQ does not support connect options higher than version 5 */
+      /* Not sure about consequences, so ABEND() */
+      ABEND();
     }
   } else if(connType==FASTPATH) {
     CPHTRACEMSG(pTrc, "Setting fastpath option")
@@ -229,8 +238,13 @@ MQIOpts::MQIOpts(CPH_CONFIG* pConfig, bool putter, bool getter, bool reconnector
 	CPHTRACEMSG(pTrc, "applName: %s", applName)
 
   if(strcmp(applName,"") != 0) {
+    /*
     protoCNO.Version = MQCNO_VERSION_7;
     strcpy(protoCNO.ApplName,applName);
+    */
+    /* NonStop MQ does not support connect options higher than version 5 */
+    /* Not sure about consequences, so ABEND() */
+    ABEND();
   }
   
   if(strcmp(autoReconnect,"") != 0){

@@ -30,6 +30,10 @@
 #include <cstring>
 #include <stdexcept>
 
+#if defined(__TANDEM)
+#include <cextdecs.h>
+#endif
+
 #ifdef ISUPPORT_CPP11
 #include <chrono>
 #elif defined(CPH_IBMI) || defined(CPH_OSX)
@@ -148,6 +152,8 @@ static inline uint32_t getCorrelIdBase(CPH_TRACE * pTrc){
   timeval now = {0,0};
   gettimeofday(&now, NULL);
   uint32_t seed = now.tv_sec ^ now.tv_usec;
+#elif defined(__TANDEM)
+  uint32_t seed = time(NULL);
 #else
   timespec now = {0,0};
   clock_gettime(CLOCK_REALTIME, &now);

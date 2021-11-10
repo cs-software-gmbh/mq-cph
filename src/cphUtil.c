@@ -31,10 +31,14 @@
 #if defined(AMQ_NT)
   #include <winbase.h>
   #include <stdint.h>
+#elif defined(CPH_HPNS)
+  #include <cextdecs.h>
+  #include <unistd.h>
+  #include <pthread.h>
 #elif defined(CPH_UNIX)
 #if defined(AMQ_AS400)
      #include <mih/retthid.h>
-   #endif
+#endif
    #include <unistd.h>
    #include <pthread.h>
 #endif
@@ -49,6 +53,8 @@
 #define SMALLPART tv_usec
 #elif defined(CPH_UNIX)
 #define SMALLPART tv_nsec
+#elif defined(CPH_HPNS)
+#define SMALLPART tv_usec
 #endif
 
 /* Static variable that the controlC handlers sets to tell the rest of the program to close down */
@@ -78,6 +84,8 @@ void cphUtilSleep( int mSecs ) {
    tval.tv_sec  = (mSecs) / 1000;
    tval.tv_usec = ((mSecs) % 1000) * 1000;
    select(0, NULL, NULL, NULL, &tval);
+#elif defined(__TANDEM)
+   PROCESS_DELAY_(mSecs * 1000);
 #else
    struct timespec rqtp;
    rqtp.tv_sec  = (mSecs) / 1000;
@@ -97,6 +105,7 @@ void cphUtilSleep( int mSecs ) {
 ** Returns: CPHTRUE on successful exection, CPHFALSE otherwise
 **
 */
+
 int cphUtilTimeIni(CPH_TIME *pTime) {
 #if defined(WIN32)
     pTime->LowPart = 0;
@@ -104,6 +113,11 @@ int cphUtilTimeIni(CPH_TIME *pTime) {
 #elif defined(CPH_UNIX)
     pTime->tv_sec = 0;
     pTime->SMALLPART = 0;
+#elif defined(CPH_HPNS)
+    pTime->tv_sec = 0;
+    pTime->SMALLPART = 0;
+#else
+   error "Undefined"
 #endif
     return(CPHTRUE);
 }
@@ -134,6 +148,8 @@ CPH_TIME cphUtilGetNow() {
   /* the epoch using the gettimeofday function, which is now obsolete  */
   /* on other Unix platforms.                                          */
    gettimeofday(&ret, NULL);
+#elif defined(__TANDEM)
+  gettimeofday(&ret, NULL);
 #else
    clock_gettime(CLOCK_REALTIME, &ret);
 #endif
@@ -165,9 +181,13 @@ long cphUtilGetTimeDifference(CPH_TIME time1, CPH_TIME time2) {
    return (long) ((time1.tv_sec-time2.tv_sec)*1000 + (time1.tv_usec-time2.tv_usec)/1000);
 #elif defined(CPH_UNIX)
    return (long) ((time1.tv_sec-time2.tv_sec)*1000 + (time1.tv_nsec-time2.tv_nsec)/1000000);
+#elif defined(CPH_HPNS)
+   return (long) ((time1.tv_sec-time2.tv_sec)*1000 + (time1.tv_usec-time2.tv_usec)/1000);
+#else
+   error "Undefined"
 #endif
-
 }
+
 long cphUtilGetUsTimeDifference(CPH_TIME time1, CPH_TIME time2) {
 
 #if defined(AMQ_NT)
@@ -185,8 +205,14 @@ long cphUtilGetUsTimeDifference(CPH_TIME time1, CPH_TIME time2) {
 } else {
   return (long) ((time1.tv_sec - time2.tv_sec) * 1000000 + (time1.tv_nsec - time2.tv_nsec)/1000);
 }
+#elif defined(CPH_HPNS)
+  if (time1.tv_usec > time2.tv_usec)
+    return (long) ((time1.tv_sec - time2.tv_sec) * 1000000 - (time2.tv_usec - time1.tv_usec));
+  else
+    return (long) ((time1.tv_sec - time2.tv_sec) * 1000000 + (time1.tv_usec - time2.tv_usec));
+#else
+   error "Undefined"
 #endif
-
 }
 
 double cphUtilGetDoubleDuration(CPH_TIME start, CPH_TIME end){
@@ -201,6 +227,10 @@ double cphUtilGetDoubleDuration(CPH_TIME start, CPH_TIME end){
    return (double)((end.tv_sec-start.tv_sec)*1000000 + end.tv_usec - start.tv_usec)/1000000;
 #elif defined(CPH_UNIX)
    return (double)((end.tv_sec-start.tv_sec)*1000000000 + end.tv_nsec - start.tv_nsec)/1000000000;
+#elif defined(CPH_HPNS)
+   return (double)((end.tv_sec-start.tv_sec)*1000000 + end.tv_usec - start.tv_usec)/1000000;
+#else
+   error "Undefined"
 #endif
 }
 
@@ -227,7 +257,7 @@ int cphUtilTimeCompare(CPH_TIME time1, CPH_TIME time2) {
     return 1;
   else
     return 0;
-#elif defined(CPH_UNIX)
+#elif defined(CPH_UNIX) || defined(CPH_HPNS)
   if(time1.tv_sec<time2.tv_sec)
     return -1;
   else if(time1.tv_sec>time2.tv_sec)
@@ -240,6 +270,8 @@ int cphUtilTimeCompare(CPH_TIME time1, CPH_TIME time2) {
     else
       return 0;
   }
+#else
+  error "Undefined"
 #endif
 }
 
@@ -260,9 +292,11 @@ void cphCopyTime(CPH_TIME *pTimeDst, CPH_TIME *pTimeSrc) {
       pTimeDst->LowPart = pTimeSrc->LowPart;
       pTimeDst->HighPart = pTimeSrc->HighPart;
       pTimeDst->QuadPart = pTimeSrc->QuadPart;
-   #elif defined(CPH_UNIX)
+   #elif defined(CPH_UNIX) || defined(CPH_HPNS)
       pTimeDst->tv_sec = pTimeSrc->tv_sec;
       pTimeDst->SMALLPART = pTimeSrc->SMALLPART;
+   #else
+     error "Undefined"
    #endif
 }
 
@@ -279,8 +313,10 @@ void cphCopyTime(CPH_TIME *pTimeDst, CPH_TIME *pTimeSrc) {
 int cphUtilTimeIsZero(CPH_TIME pTime) {
 #if defined(WIN32)
     if (pTime.QuadPart==0) return(CPHTRUE);
-#elif defined(CPH_UNIX)
+#elif defined(CPH_UNIX) || defined(CPH_HPNS)
     if (pTime.tv_sec == 0 && pTime.SMALLPART == 0) return(CPHTRUE);
+#else
+  error "Undefined"
 #endif
     return(CPHFALSE);
 }
@@ -302,7 +338,7 @@ cph_pthread_t cphUtilGetThreadId() {
     threadId = mytid.Thread_ID_Low;
 #elif defined(AMQ_MACOS)
     threadId = (uint64_t)pthread_mach_thread_np(pthread_self());
-#elif defined(CPH_UNIX)
+#elif defined(CPH_UNIX) || defined(CPH_HPNS)
     threadId = pthread_self();
 #else
 #error "Don't know how to find threadId on this platform"
@@ -322,7 +358,9 @@ int cphUtilGetProcessId() {
     int processId;
 #if defined(WIN32)
     processId = GetCurrentProcessId();
-#else //#elif defined(CPH_UNIX)
+#elif defined(CPH_UNIX) || defined(CPH_HPNS)
+    processId = (int) getpid();
+#else
     processId = (int) getpid();
 #endif
     return(processId);
@@ -340,7 +378,7 @@ int cphUtilGetProcessId() {
 */
 /* NB: This method gets invoked by Windows on a different thread */
 void cphUtilSigInt(int dummysignum) {
-    cphControlCInvoked = dummysignum;
+    cphControlCInvoked = (short)dummysignum;
     signal(SIGINT, cphUtilSigInt);
     signal(SIGTERM, cphUtilSigInt);
 }
@@ -374,7 +412,7 @@ int cphUtilGetTraceTime(char *chTime) {
       stime.wMilliseconds);
 
   return(CPHTRUE);
-#elif defined(CPH_UNIX)
+#elif defined(CPH_UNIX) || defined(CPH_HPNS)
 
   /* This is used to store the "broken down" time */
   struct tm  brokenDownTime;
@@ -384,6 +422,17 @@ int cphUtilGetTraceTime(char *chTime) {
   struct timeval atimeval;
   if (0 == gettimeofday(&atimeval, NULL)) {
     unsigned int milliSecs = atimeval.tv_usec / 1000;
+#elif defined(CPH_HPNS)
+  struct timeval atimeval;
+  if (0 == gettimeofday(&atimeval, NULL)) {
+    unsigned int milliSecs = atimeval.tv_usec / 1000;
+/*
+    struct timeval atimeval;
+    long long microsec_now = JULIANTIMESTAMP();
+    microsec_now += (millis * MICROSEC_PER_MILLISEC);
+    abs.tv_sec = (long)(microsec_now / MICROSEC_PER_SEC);
+    abs.tv_nsec = (long)((NANOSEC_PER_MICROSEC) * (microsec_now % MICROSEC_PER_SEC));
+*/
 #else
   struct timespec atimeval;
   if (0 == clock_gettime(CLOCK_REALTIME, &atimeval)) {
@@ -588,7 +637,7 @@ char *cphUtilMakeBigString(int size, int randomise) {
           }
         } else {
           for (i=0; i < size; i++) {
-            c = rand() % 58 + 65;   /*pseudo-random number in range 65-122. rand is left unseeded so tests are repeatable*/
+            c = (char)(rand() % 58 + 65);   /*pseudo-random number in range 65-122. rand is left unseeded so tests are repeatable*/
             str[i] = c;
           }
         }
@@ -730,7 +779,7 @@ int cphGetEnv(char *varName, char *varValue, size_t buffSize)
     /* Now get the value of the environment variable into the supplied buffer */
     if (0 != getenv_s(&requiredSize, varValue, buffSize, varName))
         status = CPHFALSE;
-#elif defined(CPH_UNIX)
+#elif defined(CPH_UNIX) || defined(CPH_HPNS)
     char *buff;
     if (NULL != (buff = getenv(varName))) {
         if (buffSize > strlen(buff))
@@ -740,6 +789,8 @@ int cphGetEnv(char *varName, char *varValue, size_t buffSize)
     } else {
         status = CPHFALSE;
     }
+#else
+  error "Undefined"
 #endif
     return(status);
 }
