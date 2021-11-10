@@ -28,7 +28,8 @@
 ARCH ?= $(shell /usr/coreutils/bin/uname -p)
 
 # Add AMQ_UNIX preprocessor definition
-CPPDEFS += CPH_UNIX _REENTRANT _PUT_MODEL_ _XOPEN_SOURCE _XOPEN_SOURCE_EXTENDED=1 CPH_HPNS
+#WIP CPPDEFS += CPH_UNIX _REENTRANT _PUT_MODEL_ _XOPEN_SOURCE _XOPEN_SOURCE_EXTENDED=1 CPH_HPNS
+CPPDEFS += _REENTRANT _PUT_MODEL_ _XOPEN_SOURCE _XOPEN_SOURCE_EXTENDED=1 CPH_HPNS
 
 # Executable file extension
 EXE =
@@ -46,7 +47,7 @@ RMDIR = rm -rf
 MKDIR = mkdir -p
 
 #Command to create a parent directory if it's missing
-MKDIRPART = if [ ! -d $(@D) ]; then echo "Creating output directory: $(@D)"; echo ""; $(MKDIR) $(@D); fi
+KDIRPART = if [ ! -d $(@D) ]; then echo "Creating output directory: $(@D)"; echo ""; $(MKDIR) $(@D); fi
 
 #Command to link file
 LN = ln -fs
@@ -54,11 +55,15 @@ LN = ln -fs
 #Command to copy a file or directory
 CP = cp -r
 
+# CC Flags for TANDEM compile
+CCFLAGS += -Wextensions
+
 # Option to specify target as compiler output file
 OUT = -o $@
 
 #Option to add include directory (headers)
 INC = -I
+
 
 #Option to add lib directory to libpath
 LP = -L
@@ -84,10 +89,19 @@ endif
 
 # Libraries to link
 #LIBS = pthread c dl rt m
-LIBS = wputdll c dl rt m
+LIBS = xputdll xcppcdll xcpp4dll c m
+
+#-L /G/system/sys04
+#-L /G/system/system
+#-L /G/system/zdll004
+#-L/usr/local/lib
+
+#-lcre -L/usr/local/lib -lfloss -lutil -lrld
+#-lwputdll -lcre -lfloss -lutil -lrld -lxcppcdll -lxcpp4dll -lwcppcdll -lwcpp4dll -lcrtl -lossk -lossf -lsec -li18n -licnv -losse -linet -lossh -lossc -allow_duplicate_procs
+#-lxputdll -lcre -lfloss -lutil -lrld -lxcppcdll -lxcpp4dll -lcrtl -lossk -lossf -lsec -li18n -licnv -losse -linet -lossh -lossc -allow_duplicate_procs
 
 # C compiler command
-cc = c11 -c
+cc = c99 -c
 #cc = c99 -c
 
 # C++ compiler command

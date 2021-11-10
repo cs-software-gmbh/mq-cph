@@ -25,6 +25,8 @@
 #                                                                          #
 ############################################################################
 
+$(info CC=${cc})
+
 # Determine OS type
 ifeq ($(OS),Windows_NT)
 	OSTYPE = $(OS)
@@ -71,6 +73,12 @@ endif
 ifeq ($(OSTYPE),SunOS)
 include solaris.mk
 endif
+
+ifeq ($(OSTYPE),NONSTOP_KERNEL)
+include nonstop_kernel.mk
+endif
+
+$(info CC=${cc})
 
 # Program to build
 CPH = cph$(EXE)
