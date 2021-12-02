@@ -4,7 +4,7 @@
 ###########################################################################
 . ./config.sh
 
-if crtmqm -u SYSTEM.DEAD.LETTER.QUEUE -h 50000 -lc -ld $LOG_DIR -md $DATA_DIRECTORY -lf 16384 -lp $LOG_PRIMARY_FILES $QM_NAME 
+if crtmqm -u SYSTEM.DEAD.LETTER.QUEUE -h 50000 $QM_NAME 
    then
       echo "Modifying $DATA_DIRECTORY/$QM_NAME/qm.ini"
       perl ./modifyQmIni.pl $DATA_DIRECTORY/$QM_NAME/qm.ini ./qm_update.ini

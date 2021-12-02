@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 ###########################################################################
 ### Sample MQ Queue Manager Setup for MQ-CPH Test (Paul Harris: March 2017)
 ### Usage:
@@ -39,7 +39,7 @@ for ((i=$QM_INDEX;i<$((NO_OF_QMS+QM_INDEX));i++));
 do
    printf -v QM_SUFFIX '%02d' $i
    QM_NAME=$QM_NAME_PREFIX$QM_SUFFIX
-   if crtmqm -u SYSTEM.DEAD.LETTER.QUEUE -h 50000 -lc -ld $LOG_DIR -md $DATA_DIRECTORY -lf 16384 -lp $LOG_PRIMARY_FILES $QM_NAME
+   if crtmqm -u SYSTEM.DEAD.LETTER.QUEUE -h 50000 $QM_NAME
    then
       echo "Modifying $DATA_DIRECTORY/$QM_NAME/qm.ini"
       perl ./modifyQmIni.pl $DATA_DIRECTORY/$QM_NAME/qm.ini ./qm_update.ini

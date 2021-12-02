@@ -101,9 +101,9 @@ LIBS = xputdll xcppcdll xcpp4dll c m
 #-lxputdll -lcre -lfloss -lutil -lrld -lxcppcdll -lxcpp4dll -lcrtl -lossk -lossf -lsec -li18n -licnv -losse -linet -lossh -lossc -allow_duplicate_procs
 
 # C compiler command
-cc = c99 -c
-#cc = c99 -c
+cc = c99 -c -g
+#cc = c99 -c -g
 
 # C++ compiler command
 #CC = c99 -c -Wcplusplus
-CC = c11 -c -Wcplusplus
+CC = c11 -c -g -Wcplusplus

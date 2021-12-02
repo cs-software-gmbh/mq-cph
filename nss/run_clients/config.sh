@@ -3,12 +3,12 @@
 #REQUESTER_QM = the CLIENT_QM in the setup
 #RESPONDER_QM = the SERVER_QM in the setup
 
-REQUESTER_QM=PERF1
-RESPONDER_QM=PERF0
+REQUESTER_QM=PERF01
+RESPONDER_QM=PERF00
 
 #The four settings below are only required for client mode tests
-REQUESTER_QM_HOST=mqperfx2
-RESPONDER_QM_HOST=mqperfxx
+REQUESTER_QM_HOST=cs5
+RESPONDER_QM_HOST=cs5
 REQUESTER_QM_LISTENER_PORT=1414
 RESPONDER_QM_LISTENER_PORT=1414
 
@@ -29,9 +29,12 @@ RESPONDER_TYPE=B_P
 
 MULTI_PROCESS_OUTPUT_DIR=/tmp/mqclient_output
 
-CPH_DIR=/tmp/perf2client/cph
-MQ_JAVALIB=/opt/mqm/java/lib
+CPH_DIR=/home/franz/mq-cph/mq-cph/Release/NONSTOP_KERNEL_NSV
+#MQ_JAVALIB=/opt/mqm/java/lib
+MQ_JAVALIB=/dont/have/one
 PERF_HARNESS_JAR=/mqperf/perf/clients/_Client/jmsperfharness.jar
-JAVA_BIN_DIR=/opt/mqm/java/jre64/jre/bin
+#JAVA_BIN_DIR=/opt/mqm/java/jre64/jre/bin
+JAVA_BIN_DIR=/usr/tandem/nssjava/current/bin
 #This library path is needed for bindings mode Java clients
-export LD_LIBRARY_PATH=/opt/mqm/java/lib64:$LD_LIBRARY_PATH
+#export LD_LIBRARY_PATH=/opt/mqm/java/lib64:$LD_LIBRARY_PATH
+export LD_LIBRARY_PATH=/usr/tandem/nssjava/current/lib:$LD_LIBRARY_PATH
