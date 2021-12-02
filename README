@@ -1,0 +1,3 @@
+. ../../MQ/releases/8105/var/mqm/mqprofile
+/usr/coreutils/bin/make -f Makefile  2>&1
+
