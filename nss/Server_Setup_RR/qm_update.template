@@ -1,0 +1,11 @@
+Channels:
+   MQIBindType=FASTPATH
+   MaxChannels=500000
+   MaxActiveChannels=500000
+TuningParameters:
+   DefaultQBufferSize=<buff>
+   DefaultPQBufferSize=<buff>
+#
+Log:
+   LogBufferPages=4096
+   LogWriteIntegrity=TripleWrite

@@ -1,0 +1,10 @@
+Channels:
+   MQIBindType=FASTPATH
+   PipeLineLength=2
+TuningParameters:
+   DefaultQBufferSize=<buff>
+   DefaultPQBufferSize=<buff>
+#
+Log:
+   LogBufferPages=4096
+   LogWriteIntegrity=TripleWrite

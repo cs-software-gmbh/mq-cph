@@ -1,0 +1,79 @@
+RR-1 or RR-2 setup (single queue manager)
+1. cd Server_Setup_RR
+2. Review and edit config.sh
+3. Run setup_mq_single_server.sh to set up a single queue manager ready for the test (by default qm name = PERF0)
+
+RR-6 setup (distributed queueing between 2 queue managers)
+1. cd Server_Setup_RR_DQ
+2. Review and edit config.sh (make sure the hostnames are correct).
+3. On the machine that is hosting the 'client' QM (that the requester apps will connect to), run setup_client_qm.sh
+4. On the machine that is hosting the 'server' QM (that the responder apps will connect to), run setup_server_qm.sh
+
+This setup supports multiple channels between the two queue managers, but this is only enabled by CPH. If you are running jmsperfharness for an RR-6 test you must set DQ_CHANNELS to 1.
+
+
+Running the tests:
+
+For all of the tests below:
+
+1. cd run_clients
+2. Review and edit config.sh 
+	Most of the settings are self-explanatory and relate to the values in the config used during setup. Config for running the cisets is kept separate though so this can be used against any deployment.
+	
+	You choose bindings and persistance of the messages here via REQUESTER_TYPE & RESPONDER_TYPE
+	If you're running jmsperfharness against a DQ pair then they must have been setup with DQ_CHANNELS=1 and the correspnding DQ_CHANNELS in the client config will be ignored.
+	
+	If DQ_CHANNELS is set to more than 1 in the client config (when running CPH) then the DQ pair must have been set up with the same DQ_CHANNELS value.
+	
+3. Start the requesters first, then the responders using the appropriate script:
+	start_requesters_mqi.sh <number of threads>
+	start_responders_mqi.sh <number of threads>
+	start_requesters_jms.sh <number of threads>
+	start_responders_jms.sh <number of threads>
+
+The synatax is the same in all cases, e.g.
+
+	start_responders_mqi.sh <total_threads> [processes]
+	
+	If the processes parm is omitted then all threads are started in a single process, synchronously. This is the simplest way to run a test, but if there are lots of clients, then you might want to split them across processes:
+	
+	
+	If processes is specified, then n processes are forked, each with total_threads/processes threads. total_theads must be a multiple of processes.
+	E.g. start_responders_mqi.sh 100 5  will fork 5 cph processes, each with 20 threads.
+	Note that if we're using (typically) 10 queue pairs, then they won't all be used if total_threads/processes < number of queue pairs 
+		E.g. start_responders_mqi.sh 10 5   where 10 queue pairs are intended to be used, will actually result in 
+			process 1, thread 1 -> REQUEST1/REPLY1
+			process 1, thread 2 -> REQUEST2/REPLY2
+			process 2, thread 1 -> REQUEST1/REPLY1
+			process 2, thread 2 -> REQUEST2/REPLY2
+			process 3, thread 1 -> REQUEST1/REPLY1
+			process 3, thread 2 -> REQUEST2/REPLY2
+			process 4, thread 1 -> REQUEST1/REPLY1
+			process 4, thread 2 -> REQUEST2/REPLY2
+			process 5, thread 1 -> REQUEST1/REPLY1
+			process 5, thread 2 -> REQUEST2/REPLY2
+			
+	Interleaved, per process output will be written to a file indicated at runtime, so rates must be summed from that output.
+				
+RR-1
+Requester/Responder with local bindings
+Set REQUESTER_TYPE=B_P  or  B_NP
+Set RESPONDER_TYPE=B_P  or  B_NP
+On the same host as the qm run responders
+On the same host as the qm run requesters
+
+RR-2
+Requester/Responder with Client/Local
+Set REQUESTER_TYPE=C_P  or  C_NP
+Set RESPONDER_TYPE=B_P  or  B_NP
+On the same host as the qm run responders
+On a seperate host to the qm run requesters
+
+
+RR-5 
+Distributed queueing. Requester/Responder with local bindings
+Set REQUESTER_TYPE=B_P  or  B_NP
+Set RESPONDER_TYPE=B_P  or  B_NP
+On the same host as the 'server' qm run responders
+On the same host as the 'client' qm run requesters
+
