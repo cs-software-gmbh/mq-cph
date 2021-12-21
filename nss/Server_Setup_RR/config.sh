@@ -3,38 +3,23 @@
 QM_NAME_PREFIX=PERF
 #For Single QM
 QM_NAME=PERF01
-LISTENER_PORT=1500
+LISTENER_PORT=31414
 
-MQ_DEFAULT_INSTALLATION_PATH=$MQINST/opt/mqm
+#WIP
+MQ_DEFAULT_INSTALLATION_PATH=/home/franz/MQ/issues/1894-takeover-on-agent-abend/i
 MQ_INSTALLATION_PATH=${MQ_INSTALLATION_PATH:=$MQ_DEFAULT_INSTALLATION_PATH}
-cd $MQINST
-. $MQ_INSTALLATION_PATH/bin/setmqenv
-. var/mqm/mqprofile
-cd -
+MQ_DATA_PATH=${MQ_DEFAULT_INSTALLATION}/opt/mqm
+# WIP . $MQ_INSTALLATION_PATH/bin/setmqenv
+. ${MQ_INSTALLATION_PATH}/var/mqm/mqprofile
 
 echo "MQ_DEFAULT_INSTALLATION_PATH: $MQ_DEFAULT_INSTALLATION_PATH"
 echo "MQ_INSTALLATION_PATH: $MQ_INSTALLATION_PATH"
+echo "MQ_DATA_PATH: $MQ_DATA_PATH"
 
 #Override the following two variables for non-default file locations
-LOG_DIR=$MQ_DATA_PATH/log
-echo "LOG_DIR=$MQ_DATA_PATH/log"
+LOG_DIR=$MQ_INSTALLATION_PATH/opt/mqm/log
 
-#LOG_DIR=/var/mqm/log
-#LOG_DIR=/var/ssdsata800/log
-#LOG_DIR=/var/nfs10/log
-#LOG_DIR=/var/san2/log
-#LOG_DIR=/var/r10ext4/log
-#LOG_DIR=/var/r10xfs/log
-#LOG_DIR=/var/m500ssd/mqm/log
-
-DATA_DIRECTORY=$MQ_DATA_PATH/qmgrs
-#DATA_DIRECTORY=/var/mqm/qmgrs
-#DATA_DIRECTORY=/ssd/mqm/qmgrs
-#DATA_DIRECTORY=/var/san1/qmgrs
-#DATA_DIRECTORY=/var/nfs10/qmgrs
-#DATA_DIRECTORY=/var/m500ssd/mqm/qmgrs
-
-echo "DATA_DIRECTORY=$MQ_DATA_PATH/qmgrs"
+DATA_DIRECTORY=$MQ_INSTALLATION_PATH/var/mqm
 
 #For 2K Message Size
 LOG_PRIMARY_FILES=16
