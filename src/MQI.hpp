@@ -320,10 +320,12 @@ inline void cphTraceId(CPH_TRACE * const pTrc, char const * const label, MQBYTE2
  * Calls an MQI function, logging a trace message before-hand,
  * and throwing an exception in the event of a failure.
  */
+
 #define CPHCALLMQ(T, F, ...) \
   MQLONG mqcc=0, mqrc=0;\
   CPHTRACEMSG(T, (char*) "About to call %s.", #F)\
   F(__VA_ARGS__, &mqcc, &mqrc);\
+  CPHTRACEMSG(T, (char*) "called %s %ld %ld.", #F, (long)mqcc, (long)mqrc)\
   if(mqrc!=MQRC_NONE) {\
     CPHTRACEMSG(T, (char*) "Exception from call: Comp Code:%ld ;Reason: %ld", mqcc, mqrc)\
     throw cph::MQIException(#F, mqcc, mqrc);\

@@ -60,6 +60,26 @@
 ** Returns: 0 on successful completion, non zero otherwise
 **
 */
+
+void doTime(CPH_TIME t1, CPH_TIME t2)
+{
+  long diff1, diff2;
+  int c;
+  double d;
+
+  diff1 = cphUtilGetTimeDifference(t2, t1);
+  diff2 = cphUtilGetUsTimeDifference(t2, t1);
+  c = cphUtilTimeCompare(t1, t2);
+  d = cphUtilGetDoubleDuration(t1, t2);
+
+  printf("t1                         = %ld.%09Ld\n", t1.tv_sec, t1.tv_nsec);
+  printf("t2                         = %ld.%09Ld\n", t2.tv_sec, t2.tv_nsec);
+  printf("cphUtilGetTimeDifference   = %ld milliseconds\n", (long)diff1);
+  printf("cphUtilGetUsTimeDifference = %ld microseconds\n", (long)diff2);
+  printf("compare                    = %d (t1 - t2)\n", (int)c);
+  printf("duration                   = %f\n", (double)d);
+}
+
 int main(int argc, char * argv[]) {
   CPH_CONFIG *myConfig;
   CPH_TRACE *pTrc=NULL;
@@ -117,6 +137,45 @@ int main(int argc, char * argv[]) {
 
   /* Set up the configuration control block */
   cphConfigIni(&myConfig, pTrc);
+
+/* WIP
+  {
+    CPH_TIME t1;
+    CPH_TIME t2;
+    t1 = cphUtilGetNow();
+    t2 = t1;
+    printf("cphUtilGetNow t1 = %ld.%09Ld\n", (long)t1.tv_sec, (long long)t1.tv_nsec);
+
+    doTime(t1, t2);
+
+    t1.tv_nsec = 999999999;
+    t2.tv_nsec = 111111111;
+    doTime(t1, t2);
+
+    t1.tv_nsec = 111111111;
+    t2.tv_nsec = 999999999;
+    doTime(t1, t2);
+
+    t2.tv_sec++;
+    t1.tv_nsec = 999999999;
+    t2.tv_nsec = 111111111;
+    doTime(t1, t2);
+
+    t1.tv_nsec = 111111111;
+    t2.tv_nsec = 999999999;
+    doTime(t1, t2);
+
+    t1.tv_nsec = 538348000;
+    t2.tv_nsec = 638448000;
+    doTime(t1, t2);
+
+    t1.tv_nsec = 638448000;
+    t2.tv_nsec = 538348000;
+    doTime(t1, t2);
+
+    exit(0);
+  }
+WIP */
 
 #if defined(WIN32)
   //Enable dump generation on windows, cygwin hides dump creating and message boxes

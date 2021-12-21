@@ -44,6 +44,7 @@ using namespace std;
 #include <errno.h>
 #endif
 
+#include <stdio.h>
 #include <assert.h>
 
 namespace cph {
@@ -54,7 +55,9 @@ Lock::Lock()
 #else
 {
   pthread_mutex_init(&mutex, NULL);
+  /* printf("pthread_mutex_init %p\n", (void*)&mutex); */
   pthread_cond_init(&cv, NULL);
+  /* printf("pthread_cond_init %p\n", &cv); */
 }
 #endif
 
@@ -62,6 +65,11 @@ Lock::Lock()
 Lock::~Lock() {
 #ifndef ISUPPORT_CPP11
   pthread_cond_destroy(&cv);
+  pthread_mutex_destroy(&mutex);
+#else
+  /* printf("pthread_cond_destroy %p\n", (void*)&cv); */
+  pthread_cond_destroy(&cv);
+  /* printf("pthread_mutex_destroy %p\n", &mutex); */
   pthread_mutex_destroy(&mutex);
 #endif
 }
@@ -77,6 +85,7 @@ void Lock::lock(){
 #ifdef ISUPPORT_CPP11
   mutex.lock();
 #else
+  /* printf("DEBUG pthread_mutex_lock %p\n", (void*)&mutex); */
   pthread_mutex_lock(&mutex);
 #endif
 }
@@ -92,6 +101,7 @@ void Lock::unlock(){
 #ifdef ISUPPORT_CPP11
   mutex.unlock();
 #else
+  /* printf("DEBUG pthread_mutex_unlock %p\n", (void*)&mutex); */
   pthread_mutex_unlock(&mutex);
 #endif
 }
@@ -113,6 +123,7 @@ void Lock::wait(){
   cv.wait(ul);
   ul.release();
 #else
+  /* printf("DEBUG pthread_cond_wait %p %p\n", (void*)&cv, (void*)&mutex); */
   pthread_cond_wait(&cv, &mutex);
 #endif
 }
@@ -132,19 +143,12 @@ void Lock::wait(){
  * Returns: true if the given timeout expired, false otherwise.
  */
 bool Lock::wait(absTime const &until){
-#ifdef ISUPPORT_CPP11
-  unique_lock<std::mutex> ul(mutex, adopt_lock);
-  auto rc = cv.wait_until(ul, until);
-  ul.release();
-#ifdef __GXX_EXPERIMENTAL_CXX0X__
-  return eqTypes(rc, true) ? !((bool)rc) : (bool) rc;
-#else
-  assert(eqTypes(rc,cv_status::timeout));
-  return rc == cv_status::timeout;
-#endif
-#else
-  return ETIMEDOUT == pthread_cond_timedwait(&cv, &mutex, &until);
-#endif
+  int rc = 0;
+  /* printf("DEBUG pthread_cond_timedwait %p %p %ld %ld\n", (void*)&cv, (void*)&mutex, (long)until.tv_sec, (long)until.tv_nsec); */
+  /*rc = pthread_cond_wait(&cv, &mutex, &until);*/
+  rc = pthread_cond_timedwait(&cv, &mutex, &until);
+  /* printf("DEBUG pthread_cond_timedwait %p %p %s\n", (void*)&cv, (void*)&mutex, (ETIMEDOUT == rc) ? "timed out" : "received notification"); */
+  return (ETIMEDOUT == rc);
 }
 
 /*
@@ -157,6 +161,7 @@ void Lock::notify(){
 #ifdef ISUPPORT_CPP11
   cv.notify_one();
 #else
+  /* printf("DEBUG pthread_cond_signal %p\n", (void*)&cv); */
   pthread_cond_signal(&cv);
 #endif
 }
@@ -179,12 +184,13 @@ absTime durationToAbs(int millis){
   abs.tv_sec = tv.tv_sec;
   abs.tv_nsec = tv.tv_usec*1000;
 #elif defined(__TANDEM)
-  {
-    long long microsec_now = JULIANTIMESTAMP();
-    microsec_now += (millis * MICROSEC_PER_MILLISEC);
-    abs.tv_sec = (long)(microsec_now / MICROSEC_PER_SEC);
-    abs.tv_nsec = (long)((NANOSEC_PER_MICROSEC) * (microsec_now % MICROSEC_PER_SEC));
-  } 
+  long long temp;
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  temp = (tv.tv_usec + ((long long)millis) * 1000) * 1000;
+  abs.tv_sec = tv.tv_sec + (temp / 1000000000);
+  abs.tv_nsec = temp % 1000000000;
+  return abs;
 #else //#ifdef CPH_IBMI
   clock_gettime(CLOCK_REALTIME, &abs);
 #endif //#ifdef CPH_IBMI

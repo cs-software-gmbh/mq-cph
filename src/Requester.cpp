@@ -105,11 +105,13 @@ void Requester::openDestination(){
   // Open request queue
   pInQueue = new MQIQueue(pConnection, true, false);
   CPH_DESTINATIONFACTORY_CALL_PRINTF(pInQueue->setName, iqPrefix, destinationIndex)
+  CPHTRACEMSG(pConfig->pTrc, "CALL_PRINTF %s", pInQueue->getName())
   pInQueue->open(true);
 
   // Open reply queue
   pOutQueue = new MQIQueue(pConnection, false, true);
   CPH_DESTINATIONFACTORY_CALL_PRINTF(pOutQueue->setName, oqPrefix, destinationIndex)
+  CPHTRACEMSG(pConfig->pTrc, "CALL_PRINTF %s", pOutQueue->getName())
   if (useSelector){
     pOutQueue->createSelector(pConfig->pTrc, correlId, useCustomSelector ? customSelector : NULL);
   }
@@ -157,7 +159,12 @@ void Requester::closeDestination(){
 void Requester::msgOneIteration(){
   CPHTRACEENTRY(pConfig->pTrc)
   // Put request
+
+  CPHTRACEMSG(pConfig->pTrc, "putting to %s now", pOutQueue->getName())
+
   pInQueue->put(putMessage, putMD, pmo);
+
+  CPHTRACEMSG(pConfig->pTrc, "putting to %s completed with %ld bytes", pOutQueue->getName(), (long)putMessage->messageLen)
 
   // Commit transaction if necessary,
   // otherwise we won't be able to get our reply.
@@ -170,7 +177,9 @@ void Requester::msgOneIteration(){
     cphTraceId(pConfig->pTrc, "Correlation ID", getMD.CorrelId);
   }
 
+  CPHTRACEMSG(pConfig->pTrc, "getting from %s now", pOutQueue->getName())
   pOutQueue->get(getMessage, getMD, gmo);
+  CPHTRACEMSG(pConfig->pTrc, "got from %s %ld bytes. %s", pOutQueue->getName(), (long)getMessage->messageLen, getMessage->buffer)
 
   CPHTRACEEXIT(pConfig->pTrc)
 }

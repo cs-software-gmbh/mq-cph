@@ -50,7 +50,7 @@
 #elif defined(__TANDEM)
 #include <time.h>
 #include <sys/time.h>
-#define CPH_TIME struct timeval
+#define CPH_TIME struct timespec
 #else
 #include <time.h>
 #define CPH_TIME struct timespec

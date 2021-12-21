@@ -110,6 +110,9 @@ public:
     CPHTRACEENTRY(pControlThread->pConfig->pTrc)
 
     int temp;
+ 
+    /* printf("stats thread %p created\n", (void*)this); */
+
     if (CPHTRUE != cphConfigGetBoolean(pConfig, &temp, "sp"))
       configError(pConfig, "(sp) Could not determine whether to display per-thread performance data.");
     statsPerThread = temp==CPHTRUE;
@@ -146,8 +149,11 @@ protected:
 
     /* Get the initial start time */
     CPH_TIME startTime = cphUtilGetNow();  /* start of sleep time       */
+    printf("TIME          StartTime StatsThread %ld %ld\n", (long)startTime.tv_sec, (long)startTime.tv_nsec);
 
     try {
+      /* printf("stats thread %p running\n", (void*)this); */
+
       while(!shutdown) {
         unsigned int total, j, running;
         size_t shortest;
@@ -155,14 +161,20 @@ protected:
         CPH_TIME endTime;                            /* end of sleep time         */
 
         statIter++;
+
+        printf("stats thread %p going to sleep for %ld\n", (void*)this, (long)(statsInterval * 1000));
+
         sleep(statsInterval * 1000);
+
+        printf("stats thread %p woke up\n", (void*)this);
 
         temp = prev;
         prev = curr;
         curr = temp;
         running = pControlThread->getThreadStats(*curr);
         endTime = cphUtilGetNow();
-        
+        printf("TIME          EndTime StatsThread %ld %ld\n", (long)endTime.tv_sec, (long)endTime.tv_nsec);
+
         /*We just collect latency stats for thread 0 right now*/
         if(collectLatencyStats) {
            pControlThread->getThreadLatencyStats(latencyStats,0);
@@ -411,10 +423,16 @@ void ControlThread::run() {
   bool exceptionCaught = false;
 
   try {
-    if(pStatsThread != NULL) pStatsThread->start();
+    if(pStatsThread != NULL)
+    {
+      printf("starting statistics threads\n");
+      pStatsThread->start();
+    }
+    printf("startWorkers timeout is %ld seconds\n", (long)threadStartTimeout);
     startWorkers(threadStartInterval, threadStartTimeout);
 
     startTime = cphUtilGetNow();
+    printf("TIME          StartTime ControlThread %ld.%09Ld\n", (long)startTime.tv_sec, (long long)startTime.tv_nsec);
     runLength *= 1000;
     long remaining = runLength;
     unsigned int duration = (runLength>0 && remaining<2000) ? remaining : 2000;
@@ -437,7 +455,8 @@ void ControlThread::run() {
 
     if(runningWorkers>0)
       cphLogPrintLn(pLog, LOG_VERBOSE, "Timer : Runlength expired" );
-
+    /* else
+      cphLogPrintLn(pLog, LOG_VERBOSE, "Worker: all finised"); */
   } catch (ShutdownException) {
     cphLogPrintLn(pLog, LOG_ERROR, "Caught shutdown exception." );
     CPHTRACEMSG(pTrc, "Caught shutdown exception.")
@@ -454,9 +473,14 @@ void ControlThread::run() {
 
   shutdownWorkers();
   if(pStatsThread!=NULL){
+    /* printf("control thread signals stats thread %p to shut down.\n", (void*)pStatsThread); */
     pStatsThread->signalShutdown();
     while(pStatsThread->isAlive())
+    {
+      pStatsThread->signalShutdown();
       Thread::yield();
+      cphUtilSleep(1000);
+    }
   }
 
   CPH_TIME wtTime, endTime;
@@ -468,7 +492,10 @@ void ControlThread::run() {
     if(!reportTlf){
       wtTime = (*it)->getStartTime();
       if(cphUtilTimeIsZero(wtTime)!=CPHTRUE && cphUtilTimeCompare(wtTime, startTime) < 0)
+      {
         startTime = wtTime;
+        printf("TIME          StartTime worker %ld.%09Ld\n", (long)startTime.tv_sec, (long long)startTime.tv_nsec);
+      }
     }
 
     if(doFinalSummary)
@@ -476,8 +503,10 @@ void ControlThread::run() {
 
     wtTime = (*it)->getEndTime();
     if (cphUtilTimeCompare(wtTime, endTime) > 0)
+    {
       endTime = wtTime;
-
+      printf("TIME          EndTime worker %ld.%09Ld\n", (long)endTime.tv_sec, (long long)endTime.tv_nsec);
+    }
   }
 
   /* Override the above for different timing modes */
@@ -487,13 +516,21 @@ void ControlThread::run() {
   }
 
   /* If no one has a valid end time, use our rough value */
+  printf("TIME          EndTime 1 is     %ld.%09Ld\n", (long)endTime.tv_sec, (long long)endTime.tv_nsec);
   if(cphUtilTimeIsZero(endTime)) {
+    printf("TIME          EndTime 2 is     %ld.%09Ld\n", (long)endTime.tv_sec, (long long)endTime.tv_nsec);
     CPHTRACEMSG(pTrc, "Using approximate value of end time")
+    printf("TIME          EndTime approx %ld.%09Ld\n", (long)approxEndTime.tv_sec, (long long)approxEndTime.tv_nsec);
     endTime = approxEndTime;
   }
   
+  printf("TIME          EndTime 3 is     %ld.%09Ld\n", (long)endTime.tv_sec, (long long)endTime.tv_nsec);
+
   if(doFinalSummary) {
+    printf("TIME          EndTime 4 is     %ld.%09Ld\n", (long)endTime.tv_sec, (long long)endTime.tv_nsec);
     double duration = cphUtilGetDoubleDuration(startTime, endTime);
+    printf("TIME          EndTime 5 is     %ld.%09Ld\n", (long)endTime.tv_sec, (long long)endTime.tv_nsec);
+    printf("DEBUG cphUtilGetDoubleDuration %f\n", duration);
 
     sprintf(tempStr,
         "totalIterations=%u,totalSeconds=%.2f,avgRate=%.2f",
@@ -577,6 +614,7 @@ void ControlThread::startWorkers(unsigned int interval, unsigned int timeout) {
   CPHTRACEENTRY(pTrc)
 
   //for(std::vector<WorkerThread *>::iterator it = workers.begin(); it != workers.end(); ++it){
+  printf("starting %d worker threads\n", (int)workers.size());
   for(size_t i = 0; i<workers.size();){ // i is incremented below
     pWorker = workers[i];
     /* Skip any already running threads */
@@ -587,7 +625,12 @@ void ControlThread::startWorkers(unsigned int interval, unsigned int timeout) {
 
     // Wait for thread to get up and running
     if(timeout>0){
-      lockAndWait(threadCountLock, timeout*1000, (pWorker->getState() & (S_RUNNING|S_ENDED|S_ERROR))==0)
+      bool waitTimedOut = true;
+      while (true == waitTimedOut)
+      {
+        waitTimedOut = true;
+        lockAndWait(threadCountLock, timeout*1000, (pWorker->getState() & (S_RUNNING|S_ENDED|S_ERROR))==0)
+      }
 
       if (cphControlCInvoked != 0) throw ShutdownException();
 
@@ -608,8 +651,13 @@ void ControlThread::startWorkers(unsigned int interval, unsigned int timeout) {
     }
 
     if(++i<workers.size()){
-      CPHTRACEMSG(pTrc, "Sleeping for wi(%u) ms.", interval)
-      cphUtilSleep(interval);
+      bool waitTimedOut = true;
+      while (true == waitTimedOut)
+      {
+        waitTimedOut = true;
+        CPHTRACEMSG(pTrc, "Sleeping for wi(%u) ms.", interval)
+        cphUtilSleep(interval);
+      }
     }
 
     // If we didn't wait for the thread to get up and running,
@@ -677,7 +725,12 @@ void ControlThread::shutdownWorkers() {
 
   while(runningWorkers>0){
 
-    lockAndWait(threadCountLock, 10000, runningWorkers>0)
+    bool waitTimedOut = true;
+    while (true == waitTimedOut)
+    {
+      waitTimedOut = true;
+      lockAndWait(threadCountLock, 10000, runningWorkers>0)
+    }
 
     if(runningWorkers>0){
       std::stringstream ss;

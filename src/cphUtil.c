@@ -85,7 +85,15 @@ void cphUtilSleep( int mSecs ) {
    tval.tv_usec = ((mSecs) % 1000) * 1000;
    select(0, NULL, NULL, NULL, &tval);
 #elif defined(__TANDEM)
-   PROCESS_DELAY_(mSecs * 1000);
+   struct timeval tval;
+   tval.tv_sec  = (mSecs) / 1000;
+   tval.tv_usec = ((mSecs) % 1000) * 1000;
+   if (0 == tval.tv_sec && 0 == tval.tv_usec)
+   {
+     printf("ABEND in %s %ld\n", __FUNCTION__, __LINE__);
+     ABEND();
+   }
+   select(0, NULL, NULL, NULL, &tval);
 #else
    struct timespec rqtp;
    rqtp.tv_sec  = (mSecs) / 1000;
@@ -134,6 +142,7 @@ int cphUtilTimeIni(CPH_TIME *pTime) {
 */
 CPH_TIME cphUtilGetNow() {
    CPH_TIME ret;
+
 #if defined(AMQ_NT)
 
    QueryPerformanceCounter(&ret);
@@ -149,7 +158,12 @@ CPH_TIME cphUtilGetNow() {
   /* on other Unix platforms.                                          */
    gettimeofday(&ret, NULL);
 #elif defined(__TANDEM)
-  gettimeofday(&ret, NULL);
+  {
+    struct timeval ret1;
+    gettimeofday(&ret1, NULL);
+    ret.tv_sec = ret1.tv_sec;
+    ret.tv_nsec = ret1.tv_usec * 1000;
+  }
 #else
    clock_gettime(CLOCK_REALTIME, &ret);
 #endif
@@ -169,7 +183,6 @@ CPH_TIME cphUtilGetNow() {
 **
 */
 long cphUtilGetTimeDifference(CPH_TIME time1, CPH_TIME time2) {
-
 #if defined(AMQ_NT)
    if(CountsPerMillisecond==0){
       LARGE_INTEGER freq;
@@ -179,6 +192,17 @@ long cphUtilGetTimeDifference(CPH_TIME time1, CPH_TIME time2) {
    return (long) ((time1.QuadPart-time2.QuadPart)/CountsPerMillisecond);
 #elif defined(AMQ_AS400) || defined(AMQ_MACOS)
    return (long) ((time1.tv_sec-time2.tv_sec)*1000 + (time1.tv_usec-time2.tv_usec)/1000);
+#elif defined(CPH_HPNS)
+   /* return (long) ((time1.tv_sec-time2.tv_sec)*1000 + (time1.tv_nsec-time2.tv_nsec)/1000000); */
+   if (time1.tv_nsec > time2.tv_nsec)
+   {
+     return (long) ((time1.tv_sec-time2.tv_sec)*1000 - (time2.tv_nsec-time1.tv_nsec)/1000000);
+   }
+   else
+   {
+     return (long) ((time1.tv_sec-time2.tv_sec)*1000 + (time1.tv_nsec-time2.tv_nsec)/1000000);
+   }
+
 #elif defined(CPH_UNIX)
    return (long) ((time1.tv_sec-time2.tv_sec)*1000 + (time1.tv_nsec-time2.tv_nsec)/1000000);
 #elif defined(CPH_HPNS)
@@ -199,12 +223,21 @@ long cphUtilGetUsTimeDifference(CPH_TIME time1, CPH_TIME time2) {
    return (long) ((time1.QuadPart-time2.QuadPart)/CountsPerMicrosecond);
 #elif defined(AMQ_AS400) || defined(AMQ_MACOS)
    return (long) ((time1.tv_sec-time2.tv_sec)*1000000 + (time1.tv_usec-time2.tv_usec));
+#elif defined(CPH_HPNS)
+  if (time1.tv_nsec > time2.tv_nsec)
+  {
+    return (long) ((time1.tv_sec - time2.tv_sec) * 1000000 - (time2.tv_nsec - time1.tv_nsec)/1000);
+  }
+  else
+  {
+    return (long) ((time1.tv_sec - time2.tv_sec) * 1000000 + (time1.tv_nsec - time2.tv_nsec)/1000);
+  }
 #elif defined(CPH_UNIX)
    if(time1.tv_nsec > time2.tv_nsec){
      return (long) ((time1.tv_sec - time2.tv_sec) * 1000000 - (time2.tv_nsec - time1.tv_nsec)/1000);
-} else {
-  return (long) ((time1.tv_sec - time2.tv_sec) * 1000000 + (time1.tv_nsec - time2.tv_nsec)/1000);
-}
+   } else {
+     return (long) ((time1.tv_sec - time2.tv_sec) * 1000000 + (time1.tv_nsec - time2.tv_nsec)/1000);
+   }
 #elif defined(CPH_HPNS)
   if (time1.tv_usec > time2.tv_usec)
     return (long) ((time1.tv_sec - time2.tv_sec) * 1000000 - (time2.tv_usec - time1.tv_usec));
@@ -225,6 +258,23 @@ double cphUtilGetDoubleDuration(CPH_TIME start, CPH_TIME end){
    return (double)(end.QuadPart-start.QuadPart)/performanceFrequency;
 #elif defined(AMQ_AS400) || defined(AMQ_MACOS)
    return (double)((end.tv_sec-start.tv_sec)*1000000 + end.tv_usec - start.tv_usec)/1000000;
+#elif defined(CPH_HPNS)
+   {
+     double f;
+
+     if (end.tv_nsec >= start.tv_nsec)
+     {
+       f = (end.tv_sec - start.tv_sec) + ((double)(end.tv_nsec - start.tv_nsec)) / 1000000000;
+     }
+     else
+     {
+       f = ((((long long)1000000000) * (end.tv_sec - start.tv_sec)) + (end.tv_nsec - start.tv_nsec)) / ((double)1000000000);
+     }
+
+     printf("between %ld.%09Ld and %ld.%09Ld is %f\n", (long)start.tv_sec, (long long)start.tv_nsec, (long)end.tv_sec, (long long)end.tv_nsec, (double)f);
+     return f;
+
+   }
 #elif defined(CPH_UNIX)
    return (double)((end.tv_sec-start.tv_sec)*1000000000 + end.tv_nsec - start.tv_nsec)/1000000000;
 #elif defined(CPH_HPNS)

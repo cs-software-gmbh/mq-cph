@@ -280,7 +280,12 @@ inline bool WorkerThread::doOneIteration(unsigned int& its){
      latencyIter++;
   }
   iterations++;
-  if(++its==messages) return false;
+  if(++its>=messages)
+  {
+    /* printf("%ld was last iteration\n", (long)its); */
+    return false;
+  }
+  /* printf("%ld iteration\n", (long)its); */
   if (yieldRate!=0 && its%yieldRate==0)
     yield();
   return true;

@@ -148,6 +148,7 @@ public:
   virtual ~MQIWorkerThread();
 };
 
+
 #define MQWTCLASSDEF(CLASS, ...) \
 class CLASS : public MQIWorkerThread {\
 public:\

@@ -225,6 +225,7 @@ MQIOpts::MQIOpts(CPH_CONFIG* pConfig, bool putter, bool getter, bool reconnector
       */
       /* NonStop MQ does not support connect options higher than version 5 */
       /* Not sure about consequences, so ABEND() */
+      printf("ABEND in %s %ld\n", __FUNCTION__, __LINE__);
       ABEND();
     }
   } else if(connType==FASTPATH) {
@@ -244,6 +245,7 @@ MQIOpts::MQIOpts(CPH_CONFIG* pConfig, bool putter, bool getter, bool reconnector
     */
     /* NonStop MQ does not support connect options higher than version 5 */
     /* Not sure about consequences, so ABEND() */
+    printf("ABEND in %s %ld\n", __FUNCTION__, __LINE__);
     ABEND();
   }
   

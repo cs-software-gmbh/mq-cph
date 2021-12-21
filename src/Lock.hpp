@@ -58,7 +58,28 @@ typedef struct timespec absTime;
   absTime until = cph::durationToAbs(MILLIS);\
   if(COND){\
     LOCK.lock();\
-    while((COND) && !LOCK.wait(until));\
+    {\
+      if (! (COND)) \
+      { \
+        printf("DEBUG lockAndWait COND is false\n"); \
+        waitTimedOut = false; \
+      } \
+      else \
+      { \
+        printf("DEBUG lockAndWait %p %p will wait for %ld milliseconds.\n", (void*)&LOCK.mutex, (void*)&LOCK.cv, (long)(MILLIS)); \
+        waitTimedOut = LOCK.wait(until); \
+        if (! waitTimedOut) \
+        { \
+          ; \
+          printf("DEBUG lockAndWait COND is true but received notification\n"); \
+        } \
+        else\
+        {\
+          printf("DEBUG lockAndWait COND is true but wait timed out\n"); \
+          until = cph::durationToAbs(MILLIS);\
+        }\
+      }\
+    }\
     LOCK.unlock();\
   }
 
@@ -83,7 +104,7 @@ public:
   bool wait(absTime const &until);
   void notify();
 
-private:
+/*private:*/
 
 #ifdef ISUPPORT_CPP11
   std::mutex mutex;

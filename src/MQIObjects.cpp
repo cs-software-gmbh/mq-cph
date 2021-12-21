@@ -284,7 +284,9 @@ void MQIObject::put(MQIMessage const * const msg, MQMD& md, MQPMO& pmo) {
   if(!canPut)
     throw logic_error("An attempt was made to put to an MQ object that was not open for output.");
   if(pConn->pOpts->put1)
+  {
     put1(msg, md, pmo);
+  }
   else if(hObj!=MQHO_NONE && hObj!=MQHO_UNUSABLE_HOBJ){
     CPHTRACEMSG(pConn->pTrc, "Putting message:\n[%s]", msg->buffer)
     CPHCALLMQ(pConn->pTrc, MQPUT, pConn->hConn, hObj, &md, &pmo, msg->messageLen, msg->buffer)
@@ -367,6 +369,7 @@ void MQIObject::get(MQIMessage * const msg, MQMD& md, MQGMO& gmo) const {
     if(waitUnlimited) gmo.WaitInterval = CPH_TIMEOUT_UNLIMITED;
     CPHTRACEMSG(pConn->pTrc, "About to call MQGET.")
     MQGET(pConn->hConn, hObj, &md, &gmo, msg->bufferLen, msg->buffer, &msg->messageLen, &mqcc, &mqrc);
+    CPHTRACEMSG(pConn->pTrc, "called MQGET.")
     // Reset WaitInterval in case we return.
     if(waitUnlimited) gmo.WaitInterval = MQWI_UNLIMITED;
 
@@ -449,6 +452,7 @@ MQLONG MQIObject::get_try(MQIMessage * const msg, MQMD& md, MQGMO& gmo) const {
     if(waitUnlimited) gmo.WaitInterval = CPH_TIMEOUT_UNLIMITED;
     CPHTRACEMSG(pConn->pTrc, "About to call MQGET.")
     MQGET(pConn->hConn, hObj, &md, &gmo, msg->bufferLen, msg->buffer, &msg->messageLen, &mqcc, &mqrc);
+    CPHTRACEMSG(pConn->pTrc, "called MQGET.")
     // Reset WaitInterval in case we return.
     if(waitUnlimited) gmo.WaitInterval = MQWI_UNLIMITED;
 
