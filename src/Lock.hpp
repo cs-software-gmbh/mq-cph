@@ -54,32 +54,12 @@ typedef struct timespec absTime;
  * wait for either the given condition to become false,
  * or the given number of milliseconds to expire.
  */
+
 #define lockAndWait(LOCK, MILLIS, COND)\
   absTime until = cph::durationToAbs(MILLIS);\
   if(COND){\
     LOCK.lock();\
-    {\
-      if (! (COND)) \
-      { \
-        printf("DEBUG lockAndWait COND is false\n"); \
-        waitTimedOut = false; \
-      } \
-      else \
-      { \
-        printf("DEBUG lockAndWait %p %p will wait for %ld milliseconds.\n", (void*)&LOCK.mutex, (void*)&LOCK.cv, (long)(MILLIS)); \
-        waitTimedOut = LOCK.wait(until); \
-        if (! waitTimedOut) \
-        { \
-          ; \
-          printf("DEBUG lockAndWait COND is true but received notification\n"); \
-        } \
-        else\
-        {\
-          printf("DEBUG lockAndWait COND is true but wait timed out\n"); \
-          until = cph::durationToAbs(MILLIS);\
-        }\
-      }\
-    }\
+    while((COND) && !LOCK.wait(until));\
     LOCK.unlock();\
   }
 

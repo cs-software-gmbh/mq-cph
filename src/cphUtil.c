@@ -51,10 +51,10 @@
 #if defined(AMQ_AS400) || defined(AMQ_MACOS)
 #include <sys/select.h>
 #define SMALLPART tv_usec
+#elif defined(CPH_HPNS)
+#define SMALLPART tv_nsec
 #elif defined(CPH_UNIX)
 #define SMALLPART tv_nsec
-#elif defined(CPH_HPNS)
-#define SMALLPART tv_usec
 #endif
 
 /* Static variable that the controlC handlers sets to tell the rest of the program to close down */
@@ -221,16 +221,16 @@ long cphUtilGetUsTimeDifference(CPH_TIME time1, CPH_TIME time2) {
   {
     return (long) ((time1.tv_sec - time2.tv_sec) * 1000000 + (time1.tv_nsec - time2.tv_nsec)/1000);
   }
+#elif defined(CPH_HPNS)
+  if (time1.tv_usec > time2.tv_usec)
+    return (long) ((time1.tv_sec - time2.tv_sec) * 1000000 - (time2.tv_nsec - time1.tv_nsec)/1000);
+  else
 #elif defined(CPH_UNIX)
    if(time1.tv_nsec > time2.tv_nsec){
      return (long) ((time1.tv_sec - time2.tv_sec) * 1000000 - (time2.tv_nsec - time1.tv_nsec)/1000);
    } else {
      return (long) ((time1.tv_sec - time2.tv_sec) * 1000000 + (time1.tv_nsec - time2.tv_nsec)/1000);
    }
-#elif defined(CPH_HPNS)
-  if (time1.tv_usec > time2.tv_usec)
-    return (long) ((time1.tv_sec - time2.tv_sec) * 1000000 - (time2.tv_usec - time1.tv_usec));
-  else
     return (long) ((time1.tv_sec - time2.tv_sec) * 1000000 + (time1.tv_usec - time2.tv_usec));
 #else
    error "Undefined"
