@@ -1,3 +1,321 @@
+1.) Source MQ profile
+
 . ../../MQ/releases/8105/var/mqm/mqprofile
-/usr/coreutils/bin/make -f Makefile  2>&1
+
+2.) Build project
+
+2.1.) cd "to the place where you cloned the cph project"
+
+cd ????
+
+2.2.) Make build directory first, make does not do that:
+
+mkdir -p Release/NONSTOP_KERNEL_NSV
+
+2.3.) Make clean
+
+make clean is not supported, so:
+
+  rm Release/NONSTOP_KERNEL_NSV/*.o
+  rm Release/NONSTOP_KERNEL_NSV/cph
+
+
+2.4.) If you want a version with tracing (performance penalty), then modify nonstop_kernel.mk
+Uncomment the CPP_FLAGS line with CPH_DOTRACE directive:
+
+  -DCPH_DOTRACE
+
+2.5.) Run coreutils make
+
+/usr/coreutils/bin/make -f Makefile
+
+4.) Running cph tests
+
+4.1.) If you need to find cph from outsilde Release/NONSTOP_KERNEL_NSV
+
+export PATH="$PATH:/home/franz/mq-cph/mq-cph/Release/NONSTOP_KERNEL_NSV"
+
+4.2.) cph needs to find the property file
+
+export CPH_INSTALLDIR=/home/franz/mq-cph/mq-cph/props
+
+4.3.) Tests are in nss/run_clients
+
+HPJ test script is: nss/run_clients/run_HPJ_test.sh
+
+       Verbosity
+       |     Statistics
+       |     |reporting
+       |     |
+       |     |     Message size
+       |     |     |            worker thread
+       |     |     |            start timeout
+       |     |     |            |        Worker thread
+       |     |     |            |        start interval
+       |     |     |            |        |     Run sec.
+       |     |     |            |        |     |
+       |     |     |            |        |     |     module
+       |     |     |            |        |     |     |             num dq
+       |     |     |            |        |     |     |             channels
+       |     |     |            |        |     |     |             |     Polling
+       |     |     |            |        |     |     |             |     timeout
+       |     |     |            |        |     |     |             |     |        put dest
+       |     |     |            |        |     |     |             |     |        prefix
+       |     |     |            |        |     |     |             |     |        |           get dest
+       |     |     |            |        |     |     |             |     |        |           prefix
+       |     |     |            |        |     |     |             |     |        |           |         first num
+       |     |     |            |        |     |     |             |     |        |           |         in range
+       |     |     |            |        |     |     |             |     |        |           |         |         mult dest
+       |     |     |            |        |     |     |             |     |        |           |         |         num max
+       |     |     |            |        |     |     |             |     |        |           |         |         |      num dest
+       |     |     |            |        |     |     |             |     |        |           |         |         |      in range
+       |     |     |            |        |     |     |             |     |        |           |         |         |      |     persistant
+       |     |     |            |        |     |     |             |     |        |           |         |         |      |     messages
+       |     |     |            |        |     |     |             |     |        |           |         |         |      |     |   trx
+       |     |     |            |        |     |     |             |     |        |           |         |         |      |     |   |   qmgr to
+       |     |     |            |        |     |     |             |     |        |           |         |         |      |     |   |   connect
+       |     |     |            |        |     |     |             |     |        |           |         |         |      |     |   |   |          binding
+       |     |     |            |        |     |     |             |     |        |           |         |         |      |     |   |   |          |       id in
+       |     |     |            |        |     |     |             |     |        |           |         |         |      |     |   |   |          |       stat
+       |     |     |            |        |     |     |             |     |        |           |         |         |      |     |   |   |          |       |     num threads
+       |     |     |            |        |     |     |             |     |        |           |         |         |      |     |   |   |          |       |     |
+./cph -vo 3 -ss 5 -ms 2048     -wt  120 -wi 0 -rl 0 -tc Requester -dq 1 -to 9999 -iq REQUEST -oq REPLY -db 1     -dx 10 -dn 1 -pp -tx -jb PERF01 -jt mqb -id 1 -nt 2
+./cph -vo 3 -ss 5 -ms 2048     -wt  120 -wi 0 -rl 0 -tc Requester -dq 1 -to 9999 -iq REQUEST -oq REPLY -db 1     -dx 10 -dn 1 -pp -tx -jb PERF01 -jt mqb -id 1 -nt 2
+
+./cph -vo 3 -ss 5 -ms 2048     -wt  120 -wi 0 -rl 0 -tc Requester -dq 1 -to 9999 -iq REQUEST -oq REPLY -db 1     -dx 10 -dn 1 -pp -tx -jb PERF01 -jt mqb -id 0 -nt 20
+./cph -vo 3 -ss 5 -ms 2048     -wt  120 -wi 0 -rl 0 -tc Requester -dq 1 -to 9999 -iq REQUEST -oq REPLY -db 1     -dx 10 -dn 1 -pp -tx -jb PERF01 -jt mqb -id 1 -nt 20
+./cph -vo 3 -ss 5 -ms 2048     -wt  120 -wi 0 -rl 0 -tc Requester -dq 1 -to 9999 -iq REQUEST -oq REPLY -db 1     -dx 10 -dn 1 -pp -tx -jb PERF01 -jt mqb -id 2 -nt 20
+./cph -vo 3 -ss 5 -ms 2048     -wt  120 -wi 0 -rl 0 -tc Requester -dq 1 -to 9999 -iq REQUEST -oq REPLY -db 1     -dx 10 -dn 1 -pp -tx -jb PERF01 -jt mqb -id 3 -nt 20
+./cph -vo 3 -ss 5 -ms 2048     -wt  120 -wi 0 -rl 0 -tc Requester -dq 1 -to 9999 -iq REQUEST -oq REPLY -db 1     -dx 10 -dn 1 -pp -tx -jb PERF01 -jt mqb -id 4 -nt 20
+
+./cph -vo 3 -ss 0 -ms 2048 -su -wt 9999 -wi 0 -rl 0 -tc Responder       -to    1 -iq REQUEST -oq REPLY -db 1 -cr -dx 10 -dn 1 -pp -tx -jb PERF00 -jt mqb -id 0 -nt 20
+./cph -vo 3 -ss 0 -ms 2048 -su -wt 9999 -wi 0 -rl 0 -tc Responder       -to    1 -iq REQUEST -oq REPLY -db 1 -cr -dx 10 -dn 1 -pp -tx -jb PERF00 -jt mqb -id 1 -nt 20
+./cph -vo 3 -ss 0 -ms 2048 -su -wt 9999 -wi 0 -rl 0 -tc Responder       -to    1 -iq REQUEST -oq REPLY -db 1 -cr -dx 10 -dn 1 -pp -tx -jb PERF00 -jt mqb -id 2 -nt 20
+./cph -vo 3 -ss 0 -ms 2048 -su -wt 9999 -wi 0 -rl 0 -tc Responder       -to    1 -iq REQUEST -oq REPLY -db 1 -cr -dx 10 -dn 1 -pp -tx -jb PERF00 -jt mqb -id 3 -nt 20
+./cph -vo 3 -ss 0 -ms 2048 -su -wt 9999 -wi 0 -rl 0 -tc Responder       -to    1 -iq REQUEST -oq REPLY -db 1 -cr -dx 10 -dn 1 -pp -tx -jb PERF00 -jt mqb -id 4 -nt 20
+
+./cph -vo 3 -ss 0 -ms 2048 -su -wt 9999 -wi 0 -rl 0 -tc Responder       -to    1 -iq REQUEST -oq REPLY -db 1 -cr -dx 10 -dn 1 -pp -tx -jb PERF00 -jt mqb -id 1 -nt 2
+
+Tracing:
+ Config.properties:tr.dflt = false
+ Config.properties:tr.desc = Trace calls
+ Config.properties:tr.type = java.lang.Boolean
+ Config.properties:tr.hide = 1
+
+Properties:
+ tc Modul (Requester|Responder)
+ db First number in the range
+ dn Number of destinations in the range
+ dq Number of DQ channels to configure
+ dx Multi-destination numeric maximum
+
+ id Process identifier. Visible in the statistics.
+ iq Put destination prefix. (default: REQUEST)
+
+ jb Queue manager to connect to (PERF00|PERF01)
+ jt transport local-binding or TCP/IP (mqb|mqc)
+ 
+ ms Message size in bytes
+
+ nt Number of worker threads
+
+ oq Get destination prefix. (default: REPLY)
+
+ pp Use persistent messages. (default: false)
+
+ rl Run length in seconds. (default: 60). Setting this to 0 will disable the timer and run forever.
+
+ su Display final summary. (default: true)
+ ss Statistics reporting period. (default: 10). Setting this to 0 will disable periodic reporting entirely.
+
+ to Polling timeout on receiving messages. (default: 5)
+    Polling interval in seconds. Threads will exit if a timeout occurs.
+    Set this option to -1 to wait indefinitely.
+ tx Transactionality. (default: false)
+
+ vo Verbosity to stdout. Log none = 0. Log all = 4
+
+ wi WorkerThread start interval (ms). (default: 1000)
+    The number of milliseconds between one thread reaching the status of 'running'
+    and the next being started, unless wt is set to zero, in which case this is simply the interval
+    between starting each worker thread.
+ wt WorkerThread start timeout (s). (default: 30)
+    The maximum number of seconds after starting a worker thread to wait for its status to change to 'running',
+    CPH will fail if any thread takes longer than this time to start.
+    Special case: if set to zero (0), CPH will not wait for each worker thread to start.
+
+./cph -vo 3 -ss 5 -ms 2048     -wt 120  -wi 0 -rl 0 -dq 1 -tc Requester -to 9999 -iq REQUEST -oq REPLY     -db 1 -dx 10 -dn 1 -pp -tx -jb PERF01 -jt mqb -nt  2 -id 1
+./cph -vo 3 -ss 5 -ms 2048     -wt 120  -wi 0 -rl 0 -dq 1 -tc Requester -to 9999 -iq REQUEST -oq REPLY     -db 1 -dx 10 -dn 1 -pp -tx -jb PERF01 -jt mqb -nt  2 -id 1
+./cph -vo 3 -ss 5 -ms 2048     -wt 120  -wi 0 -rl 0 -dq 1 -tc Requester -to 9999 -iq REQUEST -oq REPLY     -db 1 -dx 10 -dn 1 -pp -tx -jb PERF01 -jt mqb -nt 20 -id 0
+./cph -vo 3 -ss 5 -ms 2048     -wt 120  -wi 0 -rl 0 -dq 1 -tc Requester -to 9999 -iq REQUEST -oq REPLY     -db 1 -dx 10 -dn 1 -pp -tx -jb PERF01 -jt mqb -nt 20 -id 1
+./cph -vo 3 -ss 5 -ms 2048     -wt 120  -wi 0 -rl 0 -dq 1 -tc Requester -to 9999 -iq REQUEST -oq REPLY     -db 1 -dx 10 -dn 1 -pp -tx -jb PERF01 -jt mqb -nt 20 -id 2
+./cph -vo 3 -ss 5 -ms 2048     -wt 120  -wi 0 -rl 0 -dq 1 -tc Requester -to 9999 -iq REQUEST -oq REPLY     -db 1 -dx 10 -dn 1 -pp -tx -jb PERF01 -jt mqb -nt 20 -id 3
+./cph -vo 3 -ss 5 -ms 2048     -wt 120  -wi 0 -rl 0 -dq 1 -tc Requester -to 9999 -iq REQUEST -oq REPLY     -db 1 -dx 10 -dn 1 -pp -tx -jb PERF01 -jt mqb -nt 20 -id 4
+
+./cph -vo 3 -ss 0 -ms 2048 -su -wt 9999 -wi 0 -rl 0       -tc Responder -to   -1 -iq REQUEST -oq REPLY -cr -db 1 -dx 10 -dn 1 -pp -tx -jb PERF00 -jt mqb -nt  2 -id 1
+./cph -vo 3 -ss 0 -ms 2048 -su -wt 9999 -wi 0 -rl 0       -tc Responder -to   -1 -iq REQUEST -oq REPLY -cr -db 1 -dx 10 -dn 1 -pp -tx -jb PERF00 -jt mqb -nt  2 -id 1
+./cph -vo 3 -ss 0 -ms 2048 -su -wt 9999 -wi 0 -rl 0       -tc Responder -to   -1 -iq REQUEST -oq REPLY -cr -db 1 -dx 10 -dn 1 -pp -tx -jb PERF00 -jt mqb -nt 20 -id 0
+./cph -vo 3 -ss 0 -ms 2048 -su -wt 9999 -wi 0 -rl 0       -tc Responder -to   -1 -iq REQUEST -oq REPLY -cr -db 1 -dx 10 -dn 1 -pp -tx -jb PERF00 -jt mqb -nt 20 -id 1
+./cph -vo 3 -ss 0 -ms 2048 -su -wt 9999 -wi 0 -rl 0       -tc Responder -to   -1 -iq REQUEST -oq REPLY -cr -db 1 -dx 10 -dn 1 -pp -tx -jb PERF00 -jt mqb -nt 20 -id 2
+./cph -vo 3 -ss 0 -ms 2048 -su -wt 9999 -wi 0 -rl 0       -tc Responder -to   -1 -iq REQUEST -oq REPLY -cr -db 1 -dx 10 -dn 1 -pp -tx -jb PERF00 -jt mqb -nt 20 -id 3
+./cph -vo 3 -ss 0 -ms 2048 -su -wt 9999 -wi 0 -rl 0       -tc Responder -to   -1 -iq REQUEST -oq REPLY -cr -db 1 -dx 10 -dn 1 -pp -tx -jb PERF00 -jt mqb -nt 20 -id 4
+
+-----------------------------------------------------------------------------
+Centralises parsing, access and reporting of configuration parameters.
+
+  h	Display basic help on current configuration. (default: false)
+  hm	Display detailed help on a specific module or modules. (default: )
+	Specify multiple modules as space-separated tokens.
+	Example: -hm MQ
+  hf	Display detailed help on current configuration. (default: false)
+  v	Show version. (default: false)
+  tr	Trace calls (default: false)
+
+Log:
+-----------------------------------------------------------------------------
+A proxy to output to stdout or stderr.  There are currently no extensions to support 
+external logging, though this could be easily added.  There are 5 levels (0-4) of 
+verbosity defined as (NONE, ERROR, WARNING, INFO, VERBOSE).
+
+  vo	Verbosity below which goes to stdout. (default: 4)
+	The default is such that everything goes to stdout.
+  ve	Verbosity below which goes to stderr. (default: 0)
+	The default is such that nothing goes to stderr.
+
+ControlThread:
+-----------------------------------------------------------------------------
+Manage the lifecycle of the application and any WorkerThreads. 
+This also controls the aggregation and reporting of performance counters.
+
+  tc	Worker thread implementation to use. (default: Dummy)
+	This controls the type of workload/messaging being executed by cph.
+  ss	Statistics reporting period. (default: 10)
+	Setting this to 0 will disable periodic reporting entirely.
+  ls	Print latency stats for thread 0 (default: false)
+	Setting this to true will print max,min,avg latency per iteration on thread 0 every reporting period.
+  nt	Number of WorkerThreads. (default: 1)
+  rl	Run length in seconds. (default: 60)
+	Setting this to 0 will disable the timer and run forever.
+  id	Process identfier. (default: )
+	If set, this will be displayed in the statistics reporting.  This is
+	of use if you have to merge the output of more than one instance of the tool.
+  su	Display final summary. (default: true)
+	This setting is independant of the periodic statistics reporting.
+  sd	Sets what is reported as totalDuration. (default: normal)
+	"normal" 
+  sp	Display per-thread performance data. (default: false)
+  wi	WorkerThread start interval (ms). (default: 1000)
+	The number of milliseconds between one thread reaching the status of 'running'
+	and the next being started, unless wt is set to zero, in which case this is simply the interval
+	between starting each worker thread.
+  wt	WorkerThread start timeout (s). (default: 30)
+	The maximum number of seconds after starting a worker thread to wait for its status to change to 'running',
+	CPH will fail if any thread takes longer than this time to start.
+	Special case: if set to zero (0), CPH will not wait for each worker thread to start.
+  sh	Use signal handler to trap SIGINT (CTRL-C). (default: true)
+  ts	Thread stack size (Kb, Linux only). (default: 0)
+	Setting this to 0 will disable cph from setting a per thread stack allocation.
+
+WorkerThread:
+-----------------------------------------------------------------------------
+Base class for all varieties of test.  This class implements a general pacing 
+algorithm for those tests that wish to use it.  The performance overhead of this 
+is minimal.
+
+  rt	Desired rate (operations/sec). (default: 0)
+	If this rate is greater than the maximum achievable, the behaviour
+	is such that it runs as fast as possible.  A value of 0 means to
+	always run as fast as possible.
+  rp	Time period (s) to ramp up to the full rate. (default: 0)
+  mg	Fixed number of iterations to run per session. (default: 0)
+	The default setting of 0 means there is no iteration limit.
+  yd	Frequency to have the OS scheduler yield the thread. (default: 0)
+	This may be of use if the WorkerThreads are not being evenly scheduled.
+  sn	Maximum number of messaging sessions to run. (default: 1)
+	Setting this to 0 means there's no limit to the mumber of sessions.
+	This value is ignored if mg is 0.
+  si	Session interval (milliseconds). (default: 0)
+	The number of milliseconds to sleep between closing one session and opening the next.
+	This value is ignored if sn is 1 or mg is 0.
+
+DestinationFactory:
+-----------------------------------------------------------------------------
+This handles destinations for publish-subscribe and point-to-point domains. 
+These options only control the *names* given to destinations.  Specifying 
+"-d TOPIC" does not enable publish-subscribe ("-tc jms.r11.Publisher -d TOPIC" does that) 
+Examples: 
+-d QUEUE 
+	All threads operate on destination named QUEUE 
+-d MYTOPIC -dn 3 
+	destinations are distributed round-robin in the order MYTOPIC1..MYTOPIC3 
+-d MYTOPIC -db 6 -dn 3 
+	destinations are distributed round-robin in the order MYTOPIC6..MYTOPIC8 
+-d MYTOPIC -dx 6 -dn 3 
+	destinations are distributed round-robin in the order MYTOPIC4..MYTOPIC6 
+-d MYTOPIC -db 4 -dx 6 -dn 5 
+	destinations are distributed round-robin in the order MYTOPIC4..MYTOPIC6 starting with MYTOPIC5
+
+  iq	Put destination prefix. (default: REQUEST)
+	If no other destination parameters are set, then nothing will be appended to this.
+  oq	Get destination prefix. (default: REPLY)
+	If no other destination parameters are set, then nothing will be appended to this.
+  d	Destination prefix. (default: DEST)
+	If no other destination parameters are set, then nothing will be appended to this.
+  db	Multi-destination numeric base. (default: 0)
+  dx	Multi-destination numeric maximum. (default: 0)
+  dn	Multi-destination numeric range. (default: 0)
+
+MQOpts:
+-----------------------------------------------------------------------------
+Generic options for MQ messaging worker thread classes.
+
+  jt	WMQ transport (mqb, mqc). (default: mqc)
+	"mqb" is local-bindings connections, "mqc" is TCP/IP connections.
+  jh	DNS/IP of provider host machine. (default: localhost)
+	Ignored unless jt
+  ar	Client Auto Re-connect (default: )
+	Sets the client CNO reconnect option. Options are MQCNO_RECONNECT_AS_DEF MQCNO_RECONNECT MQCNO_RECONNECT_DISABLED or 
+	\ MQCNO_RECONNECT_Q_MGR. Any option other than null (the default) or MQCNO_RECONNECT_DISABLED will require a ccdt to be used.
+  ccdt	Client channel definition table (CCDT) URL. Will use this CCDT if specified (default: )
+  jp	Port of provider host machine. (default: 1414)
+	Ignored unless jt
+  jc	WMQ Channel to connect to. (default: SYSTEM.DEF.SVRCONN)
+	Ignored unless jt
+  jf	Use the fastpath option on the MQCONNX call (default: false)
+	Using this option means the application and the local-queue-manager agent are part of the same unit
+	of execution. Using this option should give much higher throughput when using high message rates as it avoids
+	a lot of thread switching. For this reason it is also easier to compare raw publish and susbscribe performance.
+	Ignored unless jt
+  jy	Use the readahead option on the MQCONNX call (default: false)
+	Using this option will enable any getter with the readahead option. Disabling it, defaults to the
+	QM-defined behaviour.
+	Ignored unless jt
+  jl	Specify which SSL CipherSpec to use (default: UNSPECIFIED)
+	If not using SSL, do not set parameter, the default "UNSPECIFIED" will map to empty string
+	
+  jw	Specify which TLS Certificate Label to use (default: UNSPECIFIED)
+	Can only be set if a cipher spec is also provided, Only required if flowing a certificate for the client. The default "UNSPECIFIED" will map to empty string
+	
+  ms	Message size in bytes. (default: 1000)
+  mr	Randomise text in message (otherwise repeats every 57 chars) (default: false)
+	Text is pseudo-random. Each thread will generate it's own random text message that will be the same if a test is re-run.
+  rs	Message buffer receive size in bytes. If left at default, will use value provided for ms (default: 0)
+  pp	Use persistent messages. (default: false)
+  p1	Use Put1 (Open q, put, close q) (default: false)
+  tx	Transactionality. (default: false)
+  cc	Commit count (transaction batching). (default: 1)
+	The number of operations completed within a single transaction.  This only applies
+	to test classes which only normally perform a single operation (such as Sender or Subscriber).
+	Ignored if tx
+  rf	Use RFH2 on message headers (default: false)
+	Ignored if mh
+  mh	Use message handle for message properties (default: false)
+  to	Polling timeout on receiving messages. (default: 5)
+	Polling interval in seconds. Threads will exit if a timeout occurs.
+	Set this option to -1 to wait indefinitely.
+  us	Username to authenticate as. (default: )
+	The ADOPTCTX setting will determine if this userID or the process owner is utilised for further security checks.
+  pw	Password to authenticate as. (default: )
+  cv	Convert message data (MQGMO_CONVERT) (default: true)
+  an	Sets ApplName in the MQCNO (default: )
 
