@@ -193,20 +193,9 @@ long cphUtilGetTimeDifference(CPH_TIME time1, CPH_TIME time2) {
 #elif defined(AMQ_AS400) || defined(AMQ_MACOS)
    return (long) ((time1.tv_sec-time2.tv_sec)*1000 + (time1.tv_usec-time2.tv_usec)/1000);
 #elif defined(CPH_HPNS)
-   /* return (long) ((time1.tv_sec-time2.tv_sec)*1000 + (time1.tv_nsec-time2.tv_nsec)/1000000); */
-   if (time1.tv_nsec > time2.tv_nsec)
-   {
-     return (long) ((time1.tv_sec-time2.tv_sec)*1000 - (time2.tv_nsec-time1.tv_nsec)/1000000);
-   }
-   else
-   {
-     return (long) ((time1.tv_sec-time2.tv_sec)*1000 + (time1.tv_nsec-time2.tv_nsec)/1000000);
-   }
-
+   return (long) ((time1.tv_sec-time2.tv_sec)*1000 - (time2.tv_nsec-time1.tv_nsec)/1000000);
 #elif defined(CPH_UNIX)
    return (long) ((time1.tv_sec-time2.tv_sec)*1000 + (time1.tv_nsec-time2.tv_nsec)/1000000);
-#elif defined(CPH_HPNS)
-   return (long) ((time1.tv_sec-time2.tv_sec)*1000 + (time1.tv_usec-time2.tv_usec)/1000);
 #else
    error "Undefined"
 #endif
