@@ -26,10 +26,10 @@ For all of the tests below:
 	If DQ_CHANNELS is set to more than 1 in the client config (when running CPH) then the DQ pair must have been set up with the same DQ_CHANNELS value.
 	
 3. Start the requesters first, then the responders using the appropriate script:
-	start_requesters_mqi.sh
-	start_responders_mqi.sh
-	start_requesters_jms.sh
-	start_responders_jms.sh
+	start_requesters_mqi.sh <number of threads>
+	start_responders_mqi.sh <number of threads>
+	start_requesters_jms.sh <number of threads>
+	start_responders_jms.sh <number of threads>
 
 The synatax is the same in all cases, e.g.
 
