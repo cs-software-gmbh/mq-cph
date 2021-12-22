@@ -75,7 +75,19 @@ unsigned long ETM_Tried = 0;        /* 0 means haven't tried establish*/
 /*   The Code                                                        */
 /*********************************************************************/
 
+# WIP
 
+static int mqSplitterInit = 0;
+static int logMQApi = 0;
+
+#define LOG_MQ_API             \
+if ( ! mqSplitterInit)         \
+{                              \
+  if (getenv("CPH_LOG_MQAPI")) \
+    logMQApi = 1;              \
+  mqSplitterInit = 1;          \
+}                              \
+if (logMQApi) printf
 
 /**********************************************************************************/
 /*                                                                                */
@@ -173,12 +185,14 @@ unsigned long ETM_Tried = 0;        /* 0 means haven't tried establish*/
   if (ETM_DLL_found && ETM_dynamic_MQ_entries.mqconn )
   {
      (ETM_dynamic_MQ_entries.mqconn)(pName,pHconn,pCompCode,pReason);
+     LOG_MQ_API("MQCONN(%s) cc %ld, rc %ld\n", pName, (long)*pCompCode, (long)*pReason);
   }
   else
   {
     *pCompCode = MQCC_FAILED;
     //*pReason   = MQRC_LIBRARY_LOAD_ERROR;
     *pReason   = 6000;
+    LOG_MQ_API("MQCONN MQRC_LIBRARY_LOAD_ERROR\n");
   }
 }
 
@@ -199,13 +213,14 @@ unsigned long ETM_Tried = 0;        /* 0 means haven't tried establish*/
   if (ETM_DLL_found && ETM_dynamic_MQ_entries.mqconnx )
   {
      (ETM_dynamic_MQ_entries.mqconnx)(pName,pConnectOpts,pHconn,pCompCode,pReason);
-
+     LOG_MQ_API("MQCONNX(%s) cc %ld, rc %ld\n", pName, (long)*pCompCode, (long)*pReason);
   }
   else
   {
     *pCompCode = MQCC_FAILED;
     //*pReason   = MQRC_LIBRARY_LOAD_ERROR;
     *pReason   = 6000;
+    LOG_MQ_API("MQCONNX MQRC_LIBRARY_LOAD_ERROR\n");
   }
 }
 
@@ -254,13 +269,14 @@ unsigned long ETM_Tried = 0;        /* 0 means haven't tried establish*/
   {
     (ETM_dynamic_MQ_entries.mqget)(Hconn,Hobj,pMsgDesc,pGetMsgOpts,BufferLength,
                                  pBuffer,pDataLength,pCompCode,pReason);
+    LOG_MQ_API("MQGET(%p, %p) cc %ld, rc %ld\n", (void*)Hconn, (void*)Hobj, (long)*pCompCode, (long)*pReason);
   }
   else
   {
     *pCompCode = MQCC_FAILED;
     //*pReason   = MQRC_LIBRARY_LOAD_ERROR;
     *pReason   = 6000;
-
+    LOG_MQ_API("MQGET MQRC_LIBRARY_LOAD_ERROR\n");
   }
 }
 
@@ -316,13 +332,14 @@ unsigned long ETM_Tried = 0;        /* 0 means haven't tried establish*/
   if (ETM_DLL_found && ETM_dynamic_MQ_entries.mqopen)
   {
     (ETM_dynamic_MQ_entries.mqopen)(Hconn,pObjDesc,Options,pHobj,pCompCode,pReason);
+    LOG_MQ_API("MQOPEN(qu %s, qm %s) cc %ld, rc %ld\n", ((MQOD*)pObjDesc)->ObjectName, ((MQOD*)pObjDesc)->ObjectQMgrName, (long)*pCompCode, (long)*pReason);
   }
   else
   {
     *pCompCode = MQCC_FAILED;
     //*pReason   = MQRC_LIBRARY_LOAD_ERROR;
     *pReason   = 6000;
-
+    LOG_MQ_API("MQOPEN MQRC_LIBRARY_LOAD_ERROR\n");
   }
 
 }
@@ -348,13 +365,14 @@ unsigned long ETM_Tried = 0;        /* 0 means haven't tried establish*/
   {
     (ETM_dynamic_MQ_entries.mqput)(Hconn,Hobj,pMsgDesc,pPutMsgOpts,BufferLength,
                                  pBuffer,pCompCode,pReason);
+    LOG_MQ_API("MQPUT(%p, %p) cc %ld, rc %ld\n", (void*)Hconn, (void*)Hobj, (long)*pCompCode, (long)*pReason);
   }
   else
   {
     *pCompCode = MQCC_FAILED;
     //*pReason   = MQRC_LIBRARY_LOAD_ERROR;
     *pReason   = 6000;
-
+    LOG_MQ_API("MQPUT MQRC_LIBRARY_LOAD_ERROR\n");
   }
 
 }
@@ -380,13 +398,14 @@ unsigned long ETM_Tried = 0;        /* 0 means haven't tried establish*/
   {
     (ETM_dynamic_MQ_entries.mqput1)(Hconn,pObjDesc,pMsgDesc,pPutMsgOpts,BufferLength,
                                  pBuffer,pCompCode,pReason);
+    LOG_MQ_API("MQPUT1(%p, qu %s) cc %ld, rc %ld\n", (void*)Hconn, ((MQOD*)pObjDesc)->ObjectName, (long)*pCompCode, (long)*pReason);
   }
   else
   {
     *pCompCode = MQCC_FAILED;
 //    *pReason   = MQRC_LIBRARY_LOAD_ERROR;
     *pReason   = 6000;
-
+    LOG_MQ_API("MQPUT1 MQRC_LIBRARY_LOAD_ERROR\n");
   }
 }
 

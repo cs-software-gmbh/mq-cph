@@ -149,7 +149,6 @@ protected:
 
     /* Get the initial start time */
     CPH_TIME startTime = cphUtilGetNow();  /* start of sleep time       */
-    printf("TIME          StartTime StatsThread %ld %ld\n", (long)startTime.tv_sec, (long)startTime.tv_nsec);
 
     try {
       /* printf("stats thread %p running\n", (void*)this); */
@@ -173,7 +172,6 @@ protected:
         curr = temp;
         running = pControlThread->getThreadStats(*curr);
         endTime = cphUtilGetNow();
-        printf("TIME          EndTime StatsThread %ld %ld\n", (long)endTime.tv_sec, (long)endTime.tv_nsec);
 
         /*We just collect latency stats for thread 0 right now*/
         if(collectLatencyStats) {
@@ -432,7 +430,6 @@ void ControlThread::run() {
     startWorkers(threadStartInterval, threadStartTimeout);
 
     startTime = cphUtilGetNow();
-    printf("TIME          StartTime ControlThread %ld.%09Ld\n", (long)startTime.tv_sec, (long long)startTime.tv_nsec);
     runLength *= 1000;
     long remaining = runLength;
     unsigned int duration = (runLength>0 && remaining<2000) ? remaining : 2000;
@@ -494,7 +491,6 @@ void ControlThread::run() {
       if(cphUtilTimeIsZero(wtTime)!=CPHTRUE && cphUtilTimeCompare(wtTime, startTime) < 0)
       {
         startTime = wtTime;
-        printf("TIME          StartTime worker %ld.%09Ld\n", (long)startTime.tv_sec, (long long)startTime.tv_nsec);
       }
     }
 
@@ -505,7 +501,6 @@ void ControlThread::run() {
     if (cphUtilTimeCompare(wtTime, endTime) > 0)
     {
       endTime = wtTime;
-      printf("TIME          EndTime worker %ld.%09Ld\n", (long)endTime.tv_sec, (long long)endTime.tv_nsec);
     }
   }
 
@@ -516,20 +511,13 @@ void ControlThread::run() {
   }
 
   /* If no one has a valid end time, use our rough value */
-  printf("TIME          EndTime 1 is     %ld.%09Ld\n", (long)endTime.tv_sec, (long long)endTime.tv_nsec);
   if(cphUtilTimeIsZero(endTime)) {
-    printf("TIME          EndTime 2 is     %ld.%09Ld\n", (long)endTime.tv_sec, (long long)endTime.tv_nsec);
     CPHTRACEMSG(pTrc, "Using approximate value of end time")
-    printf("TIME          EndTime approx %ld.%09Ld\n", (long)approxEndTime.tv_sec, (long long)approxEndTime.tv_nsec);
     endTime = approxEndTime;
   }
   
-  printf("TIME          EndTime 3 is     %ld.%09Ld\n", (long)endTime.tv_sec, (long long)endTime.tv_nsec);
-
   if(doFinalSummary) {
-    printf("TIME          EndTime 4 is     %ld.%09Ld\n", (long)endTime.tv_sec, (long long)endTime.tv_nsec);
     double duration = cphUtilGetDoubleDuration(startTime, endTime);
-    printf("TIME          EndTime 5 is     %ld.%09Ld\n", (long)endTime.tv_sec, (long long)endTime.tv_nsec);
     printf("DEBUG cphUtilGetDoubleDuration %f\n", duration);
 
     sprintf(tempStr,
@@ -625,13 +613,7 @@ void ControlThread::startWorkers(unsigned int interval, unsigned int timeout) {
 
     // Wait for thread to get up and running
     if(timeout>0){
-      bool waitTimedOut = true;
-      while (true == waitTimedOut)
-      {
-        waitTimedOut = true;
-        lockAndWait(threadCountLock, timeout*1000, (pWorker->getState() & (S_RUNNING|S_ENDED|S_ERROR))==0)
-      }
-
+      lockAndWait(threadCountLock, timeout*1000, (pWorker->getState() & (S_RUNNING|S_ENDED|S_ERROR))==0)
       if (cphControlCInvoked != 0) throw ShutdownException();
 
       state = pWorker->getState();
@@ -651,13 +633,7 @@ void ControlThread::startWorkers(unsigned int interval, unsigned int timeout) {
     }
 
     if(++i<workers.size()){
-      bool waitTimedOut = true;
-      while (true == waitTimedOut)
-      {
-        waitTimedOut = true;
-        CPHTRACEMSG(pTrc, "Sleeping for wi(%u) ms.", interval)
-        cphUtilSleep(interval);
-      }
+      lockAndWait(threadCountLock, timeout*1000, (pWorker->getState() & (S_RUNNING|S_ENDED|S_ERROR))==0)
     }
 
     // If we didn't wait for the thread to get up and running,
@@ -725,12 +701,7 @@ void ControlThread::shutdownWorkers() {
 
   while(runningWorkers>0){
 
-    bool waitTimedOut = true;
-    while (true == waitTimedOut)
-    {
-      waitTimedOut = true;
-      lockAndWait(threadCountLock, 10000, runningWorkers>0)
-    }
+    lockAndWait(threadCountLock, 10000, runningWorkers>0)
 
     if(runningWorkers>0){
       std::stringstream ss;

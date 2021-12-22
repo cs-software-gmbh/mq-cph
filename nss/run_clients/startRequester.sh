@@ -1,19 +1,28 @@
 #!/bin/bash
 
-cpu=$(dspmq -x -m PERF0 | grep PRIMARY | cut -d'(' -f3 | cut -d, -f1)
+# . ./config.sh
 
-if ((cpu>=0 && cpu<=5)); then
+NUM_PARALLEL=16
+NUM_THREADS="-nt ${NUM_PARALLEL}"
+NO_OF_QUEUES="-dx ${NUM_PARALLEL}"
+DQ_CHANNELS="-dq 1"
+NUM_MESSAGES="-mg 32768"
 
-run -cpu=${cpu} cph -vo 4 -ss 0 -ms 2048 -rl 60 -tc Requester -iq REQUEST -oq REPLY -db 1 -dx 1 -dn 1 -pp -tx -jb PERF0 -jt mqb -nt 1
-#run -cpu=${cpu} cph -vo 4 -ss 0 -ms 2048 -mg 32768 -tc Requester -iq REQUEST -oq REPLY -db 1 -dx 1 -dn 1 -pp -tx -jb PERF0 -jt mqb -nt 1
+cpu=$(dspmq -x -m PERF01 | grep PRIMARY | cut -d'(' -f3 | cut -d, -f1)
 
-#  run -cpu=${cpu} cph -vo 4 -ss 5 -ms 2048 -wt 120 -wi 0 -rl 0 -mg 32 -dq 1 -tc Requester -to 9999 -iq REQUEST -oq REPLY -db 1 -dx  1 -dn 1 -pp -tx -jb PERF0 -jt mqb
-#  run -cpu=${cpu} cph -vo 4 -ss 5 -ms 2048 -wt 120 -wi 0 -rl 30          -dq 1 -tc Requester -to 9999 -iq REQUEST -oq REPLY -db 1 -dx  1 -dn 1 -pp -tx -jb PERF0 -jt mqb
-#  run -cpu=${cpu} cph -vo 4       -ms 2048 -wt 120 -wi 0 -rl 0 -mg 16000 -dq 1 -tc Requester -to 9999 -iq REQUEST -oq REPLY -db 1 -dx  1 -dn 1 -pp -tx -jb PERF0 -jt mqb -nt 8
-else
+if ((cpu<0 && cpu>5)); then
   echo "Could not determine primary CPU!"
-  dspmq -x -m PERF0
+  dspmq -x -m PERF01
+  exit 1
 fi
+
+run -cpu=${cpu} cph -vo 4 -ss 10 -ms 2048 -wt 120 -wi 120 -rl 0 ${NUM_MESSAGES} ${DQ_CHANNELS} -tc Requester -to 9999 -iq REQUEST -oq REPLY -db 1 ${NO_OF_QUEUES} -dn 1 -pp -tx -jb PERF01 -jt mqb ${NUM_THREADS}
+
+# run -cpu=${cpu} cph -vo 4 -ss 0 -ms 2048 -rl 60 -tc Requester -iq REQUEST -oq REPLY -db 1 -dx 1 -dn 1 -pp -tx -jb PERF01 -jt mqb -nt 1
+# run -cpu=${cpu} cph -vo 4 -ss 0 -ms 2048 -mg 32768 -tc Requester -iq REQUEST -oq REPLY -db 1 -dx 1 -dn 1 -pp -tx -jb PERF01 -jt mqb -nt 1
+# run -cpu=${cpu} cph -vo 4 -ss 5 -ms 2048 -wt 120 -wi 0 -rl 0 -mg 32 -dq 1 -tc Requester -to 9999 -iq REQUEST -oq REPLY -db 1 -dx 1 -dn 1 -pp -tx -jb PERF01 -jt mqb
+# run -cpu=${cpu} cph -vo 4 -ss 5 -ms 2048 -wt 120 -wi 0 -rl 30          -dq 1 -tc Requester -to 9999 -iq REQUEST -oq REPLY -db 1 -dx  1 -dn 1 -pp -tx -jb PERF01 -jt mqb
+
 
 # vo: Verbosity to stdout. Log none = 0. Log all = 4
 # ss: Statistics reporting period. (default: 10)

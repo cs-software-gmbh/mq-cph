@@ -54,7 +54,6 @@ typedef struct timespec absTime;
  * wait for either the given condition to become false,
  * or the given number of milliseconds to expire.
  */
-
 #define lockAndWait(LOCK, MILLIS, COND)\
   absTime until = cph::durationToAbs(MILLIS);\
   if(COND){\

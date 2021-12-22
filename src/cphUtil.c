@@ -51,10 +51,10 @@
 #if defined(AMQ_AS400) || defined(AMQ_MACOS)
 #include <sys/select.h>
 #define SMALLPART tv_usec
-#elif defined(CPH_HPNS)
-#define SMALLPART tv_nsec
 #elif defined(CPH_UNIX)
 #define SMALLPART tv_nsec
+#elif defined(CPH_HPNS)
+#define SMALLPART tv_usec
 #endif
 
 /* Static variable that the controlC handlers sets to tell the rest of the program to close down */
@@ -78,24 +78,32 @@ uint64_t performanceFrequency;
 */
 void cphUtilSleep( int mSecs ) {
 #if defined(WIN32)
+   printf("ABEND in %s %ld\n", __FUNCTION__, __LINE__);
+   ABEND();
    Sleep( mSecs );
 #elif defined(AMQ_AS400)
    struct timeval tval;
+   printf("ABEND in %s %ld\n", __FUNCTION__, __LINE__);
    tval.tv_sec  = (mSecs) / 1000;
    tval.tv_usec = ((mSecs) % 1000) * 1000;
    select(0, NULL, NULL, NULL, &tval);
+   ABEND();
 #elif defined(__TANDEM)
    struct timeval tval;
    tval.tv_sec  = (mSecs) / 1000;
    tval.tv_usec = ((mSecs) % 1000) * 1000;
    if (0 == tval.tv_sec && 0 == tval.tv_usec)
    {
-     printf("ABEND in %s %ld\n", __FUNCTION__, __LINE__);
-     ABEND();
+     printf("converting 0 mSecs to 1/100 second.\n");
+     tval.tv_usec = 10000;
    }
+   /* printf("Sleep %ld %ld\n", (long)tval.tv_sec, (long)tval.tv_usec); */
    select(0, NULL, NULL, NULL, &tval);
+   /* printf("Slept %ld %ld\n", (long)tval.tv_sec, (long)tval.tv_usec); */
 #else
    struct timespec rqtp;
+   printf("ABEND in %s %ld\n", __FUNCTION__, __LINE__);
+   ABEND();
    rqtp.tv_sec  = (mSecs) / 1000;
    rqtp.tv_nsec = ((mSecs) % 1000) * 1000000;
    nanosleep(&rqtp, NULL);
@@ -145,6 +153,8 @@ CPH_TIME cphUtilGetNow() {
 
 #if defined(AMQ_NT)
 
+   printf("ABEND in %s %ld\n", __FUNCTION__, __LINE__);
+   ABEND();
    QueryPerformanceCounter(&ret);
 
 #else //#elif defined(CPH_UNIX)
@@ -156,6 +166,8 @@ CPH_TIME cphUtilGetNow() {
   /* On iSeries we get the number of seconds and micro seconds since   */
   /* the epoch using the gettimeofday function, which is now obsolete  */
   /* on other Unix platforms.                                          */
+   printf("ABEND in %s %ld\n", __FUNCTION__, __LINE__);
+   ABEND();
    gettimeofday(&ret, NULL);
 #elif defined(__TANDEM)
   {
@@ -164,7 +176,10 @@ CPH_TIME cphUtilGetNow() {
     ret.tv_sec = ret1.tv_sec;
     ret.tv_nsec = ret1.tv_usec * 1000;
   }
+  printf("Now %ld.%09Ld\n", (long)ret.tv_sec, (long long)ret.SMALLPART);
 #else
+   printf("ABEND in %s %ld\n", __FUNCTION__, __LINE__);
+   ABEND();
    clock_gettime(CLOCK_REALTIME, &ret);
 #endif
 #endif
@@ -184,6 +199,8 @@ CPH_TIME cphUtilGetNow() {
 */
 long cphUtilGetTimeDifference(CPH_TIME time1, CPH_TIME time2) {
 #if defined(AMQ_NT)
+   printf("ABEND in %s %ld\n", __FUNCTION__, __LINE__);
+   ABEND();
    if(CountsPerMillisecond==0){
       LARGE_INTEGER freq;
       QueryPerformanceFrequency(&freq);
@@ -191,12 +208,18 @@ long cphUtilGetTimeDifference(CPH_TIME time1, CPH_TIME time2) {
    }
    return (long) ((time1.QuadPart-time2.QuadPart)/CountsPerMillisecond);
 #elif defined(AMQ_AS400) || defined(AMQ_MACOS)
+   printf("ABEND in %s %ld\n", __FUNCTION__, __LINE__);
+   ABEND();
    return (long) ((time1.tv_sec-time2.tv_sec)*1000 + (time1.tv_usec-time2.tv_usec)/1000);
 #elif defined(CPH_HPNS)
    return (long) ((time1.tv_sec-time2.tv_sec)*1000 - (time2.tv_nsec-time1.tv_nsec)/1000000);
 #elif defined(CPH_UNIX)
+   printf("ABEND in %s %ld\n", __FUNCTION__, __LINE__);
+   ABEND();
    return (long) ((time1.tv_sec-time2.tv_sec)*1000 + (time1.tv_nsec-time2.tv_nsec)/1000000);
 #else
+   printf("ABEND in %s %ld\n", __FUNCTION__, __LINE__);
+   ABEND();
    error "Undefined"
 #endif
 }
@@ -204,6 +227,8 @@ long cphUtilGetTimeDifference(CPH_TIME time1, CPH_TIME time2) {
 long cphUtilGetUsTimeDifference(CPH_TIME time1, CPH_TIME time2) {
 
 #if defined(AMQ_NT)
+   printf("ABEND in %s %ld\n", __FUNCTION__, __LINE__);
+   ABEND();
    if(CountsPerMicrosecond==0){
       LARGE_INTEGER freq;
       QueryPerformanceFrequency(&freq);
@@ -211,6 +236,8 @@ long cphUtilGetUsTimeDifference(CPH_TIME time1, CPH_TIME time2) {
    }
    return (long) ((time1.QuadPart-time2.QuadPart)/CountsPerMicrosecond);
 #elif defined(AMQ_AS400) || defined(AMQ_MACOS)
+   printf("ABEND in %s %ld\n", __FUNCTION__, __LINE__);
+   ABEND();
    return (long) ((time1.tv_sec-time2.tv_sec)*1000000 + (time1.tv_usec-time2.tv_usec));
 #elif defined(CPH_HPNS)
   if (time1.tv_nsec > time2.tv_nsec)
@@ -221,24 +248,25 @@ long cphUtilGetUsTimeDifference(CPH_TIME time1, CPH_TIME time2) {
   {
     return (long) ((time1.tv_sec - time2.tv_sec) * 1000000 + (time1.tv_nsec - time2.tv_nsec)/1000);
   }
-#elif defined(CPH_HPNS)
-  if (time1.tv_usec > time2.tv_usec)
-    return (long) ((time1.tv_sec - time2.tv_sec) * 1000000 - (time2.tv_nsec - time1.tv_nsec)/1000);
-  else
 #elif defined(CPH_UNIX)
+   printf("ABEND in %s %ld\n", __FUNCTION__, __LINE__);
+   ABEND();
    if(time1.tv_nsec > time2.tv_nsec){
      return (long) ((time1.tv_sec - time2.tv_sec) * 1000000 - (time2.tv_nsec - time1.tv_nsec)/1000);
    } else {
      return (long) ((time1.tv_sec - time2.tv_sec) * 1000000 + (time1.tv_nsec - time2.tv_nsec)/1000);
    }
-    return (long) ((time1.tv_sec - time2.tv_sec) * 1000000 + (time1.tv_usec - time2.tv_usec));
 #else
+   printf("ABEND in %s %ld\n", __FUNCTION__, __LINE__);
+   ABEND();
    error "Undefined"
 #endif
 }
 
 double cphUtilGetDoubleDuration(CPH_TIME start, CPH_TIME end){
 #if defined(AMQ_NT)
+   printf("ABEND in %s %ld\n", __FUNCTION__, __LINE__);
+   ABEND();
    if(performanceFrequency==0){
       LARGE_INTEGER freq;
       QueryPerformanceFrequency(&freq);
@@ -246,6 +274,8 @@ double cphUtilGetDoubleDuration(CPH_TIME start, CPH_TIME end){
    }
    return (double)(end.QuadPart-start.QuadPart)/performanceFrequency;
 #elif defined(AMQ_AS400) || defined(AMQ_MACOS)
+   printf("ABEND in %s %ld\n", __FUNCTION__, __LINE__);
+   ABEND();
    return (double)((end.tv_sec-start.tv_sec)*1000000 + end.tv_usec - start.tv_usec)/1000000;
 #elif defined(CPH_HPNS)
    {
@@ -260,15 +290,16 @@ double cphUtilGetDoubleDuration(CPH_TIME start, CPH_TIME end){
        f = ((((long long)1000000000) * (end.tv_sec - start.tv_sec)) + (end.tv_nsec - start.tv_nsec)) / ((double)1000000000);
      }
 
-     printf("between %ld.%09Ld and %ld.%09Ld is %f\n", (long)start.tv_sec, (long long)start.tv_nsec, (long)end.tv_sec, (long long)end.tv_nsec, (double)f);
      return f;
 
    }
 #elif defined(CPH_UNIX)
+   printf("ABEND in %s %ld\n", __FUNCTION__, __LINE__);
+   ABEND();
    return (double)((end.tv_sec-start.tv_sec)*1000000000 + end.tv_nsec - start.tv_nsec)/1000000000;
-#elif defined(CPH_HPNS)
-   return (double)((end.tv_sec-start.tv_sec)*1000000 + end.tv_usec - start.tv_usec)/1000000;
 #else
+   printf("ABEND in %s %ld\n", __FUNCTION__, __LINE__);
+   ABEND();
    error "Undefined"
 #endif
 }

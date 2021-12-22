@@ -25,13 +25,15 @@ Uncomment the CPP_FLAGS line with CPH_DOTRACE directive:
 
   -DCPH_DOTRACE
 
+Please check 4.4. if you want to see MQAPI calls logged to the terminal.
+
 2.5.) Run coreutils make
 
 /usr/coreutils/bin/make -f Makefile
 
 4.) Running cph tests
 
-4.1.) If you need to find cph from outsilde Release/NONSTOP_KERNEL_NSV
+4.1.) If you need to find cph from any directory outside Release/NONSTOP_KERNEL_NSV
 
 export PATH="$PATH:/home/franz/mq-cph/mq-cph/Release/NONSTOP_KERNEL_NSV"
 
@@ -42,6 +44,10 @@ export CPH_INSTALLDIR=/home/franz/mq-cph/mq-cph/props
 4.3.) Tests are in nss/run_clients
 
 HPJ test script is: nss/run_clients/run_HPJ_test.sh
+
+4.4.) To log some (CONN,OPEN,PUT,GET so far) MQ API calls, do:
+
+export CPH_LOG_MQAPI=1
 
        Verbosity
        |     Statistics
