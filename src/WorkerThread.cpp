@@ -262,6 +262,15 @@ void WorkerThread::run(){
 
 inline bool WorkerThread::doOneIteration(unsigned int& its){
   if(shutdown) return false;
+
+  if(shutdown) 
+  {
+    return false;
+  }
+  if(its>=messages)
+  {
+    return false;
+  }
   
   if(collectLatencyStats) latencyStartTime = cphUtilGetNow();
   oneIteration();
