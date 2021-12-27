@@ -264,6 +264,8 @@ if (logMQApi) printf
    PMQLONG  pCompCode,     /* Completion code */
    PMQLONG  pReason)       /* Reason code qualifying CompCode */
 {
+  MQLONG saveValue = ((MQGMO*)pGetMsgOpts)->WaitInterval;
+  ((MQGMO*)pGetMsgOpts)->WaitInterval = 10000;
 
   if (ETM_DLL_found && ETM_dynamic_MQ_entries.mqget)
   {
@@ -278,6 +280,7 @@ if (logMQApi) printf
     *pReason   = 6000;
     LOG_MQ_API("MQGET MQRC_LIBRARY_LOAD_ERROR\n");
   }
+  ((MQGMO*)pGetMsgOpts)->WaitInterval = saveValue;
 }
 
 
