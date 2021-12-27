@@ -76,9 +76,7 @@ uint64_t Thread::getId() const {
  */
 void Thread::signalShutdown(){
   CPHTRACEENTRY(pConfig->pTrc)
-  /* printf("DEBUG thread %p notify shutdown lock %p %p\n", (void*)this, &shutdownLock.mutex, &shutdownLock.cv); */
   shutdownLock.lock();
-  /* printf("DEBUG thread %p shutdown lock acquired %p %p\n", (void*)this, &shutdownLock.mutex, &shutdownLock.cv); */
   shutdown = true;
   shutdownLock.notify();
   shutdownLock.unlock();
@@ -95,10 +93,8 @@ void Thread::signalShutdown(){
 void Thread::checkShutdown() const {
   if(shutdown)
   {
-    /* printf("thread %p: shutdown flag is on\n", (void*)this); */
     throw ShutdownException(this);
   }
-  /* printf("thread %p: shutdown flag is off\n", (void*)this); */
 }
 
 CPH_THREAD_RUN _thread_run(void* t) {
@@ -130,7 +126,6 @@ bool Thread::start(){
 
   if(!shutdown && id==0){
 #ifdef CPH_WINDOWS
-    DWORD tid;
     if(NULL == CreateThread(NULL, 0, _thread_run, this, 0, &tid)){
 #else //#elif defined(CPH_UNIX)
     pthread_t tid;
@@ -186,7 +181,6 @@ char const * Thread::ShutdownException::what() const throw() {
 }
 
 uint64_t Thread::getCurrentThreadId(){
-  uint64_t id;
 #if defined(CPH_WINDOWS)
   return (uint64_t) GetCurrentThreadId();
 #elif defined(CPH_IBMI)
@@ -196,8 +190,7 @@ uint64_t Thread::getCurrentThreadId(){
   return (uint64_t) pthread_mach_thread_np(pthread_self());
 #elif defined(CPH_HPNS)
   pthread_t tid=pthread_self();
-  id = (uint64_t) ((uint64_t) tid.field3 << (sizeof(unsigned int) << 3)) + tid.field2;
-  /* printf("getCurrentThreadId id = %Ld %p %d %d\n", (long long)id, (void*)tid.field1, (int)tid.field2, (int)tid.field3); */
+  uint64_t id = (uint64_t) ((uint64_t) tid.field3 << (sizeof(unsigned int) << 3)) + tid.field2;
   return id;
 #elif defined(CPH_UNIX)
   return (uint64_t) pthread_self();

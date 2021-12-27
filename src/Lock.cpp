@@ -55,9 +55,7 @@ Lock::Lock()
 #else
 {
   pthread_mutex_init(&mutex, NULL);
-  /* printf("pthread_mutex_init %p\n", (void*)&mutex); */
   pthread_cond_init(&cv, NULL);
-  /* printf("pthread_cond_init %p\n", &cv); */
 }
 #endif
 
@@ -67,9 +65,7 @@ Lock::~Lock() {
   pthread_cond_destroy(&cv);
   pthread_mutex_destroy(&mutex);
 #else
-  /* printf("pthread_cond_destroy %p\n", (void*)&cv); */
   pthread_cond_destroy(&cv);
-  /* printf("pthread_mutex_destroy %p\n", &mutex); */
   pthread_mutex_destroy(&mutex);
 #endif
 }
@@ -85,7 +81,6 @@ void Lock::lock(){
 #ifdef ISUPPORT_CPP11
   mutex.lock();
 #else
-  /* printf("DEBUG pthread_mutex_lock %p\n", (void*)&mutex); */
   pthread_mutex_lock(&mutex);
 #endif
 }
@@ -101,7 +96,6 @@ void Lock::unlock(){
 #ifdef ISUPPORT_CPP11
   mutex.unlock();
 #else
-  /* printf("DEBUG pthread_mutex_unlock %p\n", (void*)&mutex); */
   pthread_mutex_unlock(&mutex);
 #endif
 }
@@ -123,7 +117,6 @@ void Lock::wait(){
   cv.wait(ul);
   ul.release();
 #else
-  /* printf("DEBUG pthread_cond_wait %p %p\n", (void*)&cv, (void*)&mutex); */
   pthread_cond_wait(&cv, &mutex);
 #endif
 }
@@ -144,10 +137,8 @@ void Lock::wait(){
  */
 bool Lock::wait(absTime const &until){
   int rc = 0;
-  /* printf("DEBUG pthread_cond_timedwait %p %p %ld %ld\n", (void*)&cv, (void*)&mutex, (long)until.tv_sec, (long)until.tv_nsec); */
   /*rc = pthread_cond_wait(&cv, &mutex, &until);*/
   rc = pthread_cond_timedwait(&cv, &mutex, &until);
-  /* printf("DEBUG pthread_cond_timedwait %p %p %s\n", (void*)&cv, (void*)&mutex, (ETIMEDOUT == rc) ? "timed out" : "received notification"); */
   return (ETIMEDOUT == rc);
 }
 
@@ -161,7 +152,6 @@ void Lock::notify(){
 #ifdef ISUPPORT_CPP11
   cv.notify_one();
 #else
-  /* printf("DEBUG pthread_cond_signal %p\n", (void*)&cv); */
   pthread_cond_signal(&cv);
 #endif
 }

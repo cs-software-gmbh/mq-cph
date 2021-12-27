@@ -111,8 +111,6 @@ public:
 
     int temp;
  
-    /* printf("stats thread %p created\n", (void*)this); */
-
     if (CPHTRUE != cphConfigGetBoolean(pConfig, &temp, "sp"))
       configError(pConfig, "(sp) Could not determine whether to display per-thread performance data.");
     statsPerThread = temp==CPHTRUE;
@@ -151,8 +149,6 @@ protected:
     CPH_TIME startTime = cphUtilGetNow();  /* start of sleep time       */
 
     try {
-      /* printf("stats thread %p running\n", (void*)this); */
-
       while(!shutdown) {
         unsigned int total, j, running;
         size_t shortest;
@@ -161,11 +157,7 @@ protected:
 
         statIter++;
 
-        printf("stats thread %p going to sleep for %ld\n", (void*)this, (long)(statsInterval * 1000));
-
         sleep(statsInterval * 1000);
-
-        printf("stats thread %p woke up\n", (void*)this);
 
         temp = prev;
         prev = curr;
@@ -426,7 +418,6 @@ void ControlThread::run() {
       printf("starting statistics threads\n");
       pStatsThread->start();
     }
-    printf("startWorkers timeout is %ld seconds\n", (long)threadStartTimeout);
     startWorkers(threadStartInterval, threadStartTimeout);
 
     startTime = cphUtilGetNow();
@@ -436,6 +427,7 @@ void ControlThread::run() {
 
     while(duration>0 && runningWorkers>0){
       CPHTRACEMSG(pTrc, "Sleeping for %ums...", duration)
+      printf("sleeping:  %ld\n", (long)duration);
       cphUtilSleep(duration);
       if (cphControlCInvoked != 0) {
     	  sprintf(tempStr, "cphControlCInvoked flag triggered: %d - Signal detected", cphControlCInvoked);
@@ -450,10 +442,16 @@ void ControlThread::run() {
       duration = (runLength>0 && remaining<2000) ? remaining : 2000;
     }
 
+    printf("\n");
+    printf("##############\n");
+    printf("LOOP finished!\n");
+    printf("##############\n");
+    printf("\n");
+
     if(runningWorkers>0)
       cphLogPrintLn(pLog, LOG_VERBOSE, "Timer : Runlength expired" );
-    /* else
-      cphLogPrintLn(pLog, LOG_VERBOSE, "Worker: all finised"); */
+    else
+      cphLogPrintLn(pLog, LOG_VERBOSE, "Worker: all finised");
   } catch (ShutdownException) {
     cphLogPrintLn(pLog, LOG_ERROR, "Caught shutdown exception." );
     CPHTRACEMSG(pTrc, "Caught shutdown exception.")
@@ -470,7 +468,6 @@ void ControlThread::run() {
 
   shutdownWorkers();
   if(pStatsThread!=NULL){
-    /* printf("control thread signals stats thread %p to shut down.\n", (void*)pStatsThread); */
     pStatsThread->signalShutdown();
     while(pStatsThread->isAlive())
     {

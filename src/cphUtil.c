@@ -176,7 +176,6 @@ CPH_TIME cphUtilGetNow() {
     ret.tv_sec = ret1.tv_sec;
     ret.tv_nsec = ret1.tv_usec * 1000;
   }
-  printf("Now %ld.%09Ld\n", (long)ret.tv_sec, (long long)ret.SMALLPART);
 #else
    printf("ABEND in %s %ld\n", __FUNCTION__, __LINE__);
    ABEND();

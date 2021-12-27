@@ -261,18 +261,18 @@ void WorkerThread::run(){
 }
 
 inline bool WorkerThread::doOneIteration(unsigned int& its){
-  if(shutdown) return false;
 
   if(shutdown) 
   {
     return false;
   }
-  if(its>=messages)
+  if(messages > 0 && its>=messages)
   {
     return false;
   }
   
   if(collectLatencyStats) latencyStartTime = cphUtilGetNow();
+
   oneIteration();
 
   if(collectLatencyStats) {
@@ -291,10 +291,11 @@ inline bool WorkerThread::doOneIteration(unsigned int& its){
   iterations++;
   if(++its>=messages)
   {
-    /* printf("%ld was last iteration\n", (long)its); */
-    return false;
+    if (messages > 0)
+    {
+      return false;
+    }
   }
-  /* printf("%ld iteration\n", (long)its); */
   if (yieldRate!=0 && its%yieldRate==0)
     yield();
   return true;
@@ -314,7 +315,9 @@ void WorkerThread::pace() {
   unsigned int its = 0;
 
   if(rate==0) // We are not trying to fix the rate
+  {
     while(doOneIteration(its));
+  }
   else { // We are trying to fix the rate
 
     //Nominally, CPH_SLEEP_GRANULARITY has [Dimension: 1/t | Units: 1/seconds]
