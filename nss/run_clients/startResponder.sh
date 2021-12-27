@@ -2,10 +2,18 @@
 
 # . ./config.sh
 
-NUM_PARALLEL=16
-NUM_THREADS="-nt ${NUM_PARALLEL}"
-NO_OF_QUEUES="-dx ${NUM_PARALLEL}"
-NUM_MESSAGES="-mg 32768"
+NUMBER_MESSAGES=${NUMBER_MESSAGES-32}
+NUMBER_PARALLEL=${NUMBER_PARALLEL-4}
+
+NUM_THREADS="-nt ${NUMBER_PARALLEL}"
+NO_OF_QUEUES="-dx ${NUMBER_PARALLEL}"
+NUM_MESSAGES="-mg ${NUMBER_MESSAGES}"
+RUN_LENGTH_NOT="-rl 0"
+RUN_LENGTH_YES="-rl 30"
+GLOBAL_TRX=""
+GLOBAL_TRX="-tx"
+PERSISTENT=""
+PERSISTENT="-pp"
 
 cpu=$(dspmq -x -m PERF01 | grep PRIMARY | cut -d'(' -f3 | cut -d, -f1)
 
@@ -15,12 +23,10 @@ if ((cpu<0 && cpu>5)); then
   exit 1
 fi
 
-run -cpu=${cpu} cph -vo 4 -ss 0 -ms 2048 ${NUM_MESSAGES} -tc Responder -iq REQUEST -oq REPLY -cr -to -1 -db 1 ${NO_OF_QUEUES} -dn 1 -pp -tx -jb PERF01 -jt mqb ${NUM_THREADS}
-
-# run -cpu=${cpu} cph -vo 4 -ss 0 -ms 2048 -rl 60 -tc Responder -iq REQUEST -oq REPLY -cr -to -1 -db 1 -dx 1 -dn 1 -pp -tx -jb PERF01 -jt mqb -nt 1
-# run -cpu=${cpu} cph -vo 4 -ms 2048 -su -wt 9999 -wi 0 -ss 0 -rl 0 -mg 32 -tc Responder -oq REPLY -iq REQUEST -cr -to -1 -db 1 -dx  1 -dn 1 -pp -tx -jb PERF01 -jt mqb -id 1 -nt 1
-# run -cpu=${cpu} cph -vo 4 -ms 2048 -su -wt 9999 -wi 0 -ss 0 -rl 30 -tc Responder -oq REPLY -iq REQUEST -cr -to -1 -db 1 -dx  1 -dn 1 -pp -tx -jb PERF01 -jt mqb -id 1 -nt 1
-
+## Num message text
+# run -cpu=${cpu} cph -vo 4 -ss 0 -ms 2048 ${NUM_MESSAGES} ${RUN_LENGTH_NOT} -tc Responder -iq REQUEST -oq REPLY -cr -to -1 -db 1 ${NO_OF_QUEUES} -dn 1 ${PERSISTENT} ${GLOBAL_TRX} -jb PERF01 -jt mqb ${NUM_THREADS}
+## Runtime length test
+run -cpu=${cpu} cph -vo 4 -ss 0 -ms 2048 ${NUM_MESSAGES} ${RUN_LENGTH_YES} -tc Responder -iq REQUEST -oq REPLY -cr -to -1 -db 1 ${NO_OF_QUEUES} -dn 1 ${PERSISTENT} ${GLOBAL_TRX} -jb PERF01 -jt mqb ${NUM_THREADS}
 
 # vo: Verbosity to stdout. Log none = 0. Log all = 4
 # ss: Statistics reporting period. (default: 10)

@@ -2,11 +2,19 @@
 
 # . ./config.sh
 
-NUM_PARALLEL=16
-NUM_THREADS="-nt ${NUM_PARALLEL}"
-NO_OF_QUEUES="-dx ${NUM_PARALLEL}"
+NUMBER_MESSAGES=${NUMBER_MESSAGES-32}
+NUMBER_PARALLEL=${NUMBER_PARALLEL-4}
+
+NUM_THREADS="-nt ${NUMBER_PARALLEL}"
+NO_OF_QUEUES="-dx ${NUMBER_PARALLEL}"
 DQ_CHANNELS="-dq 1"
-NUM_MESSAGES="-mg 32768"
+NUM_MESSAGES="-mg ${NUMBER_MESSAGES}"
+RUN_LENGTH_NOT="-rl 0"
+RUN_LENGTH_YES="-rl 30"
+GLOBAL_TRX=""
+GLOBAL_TRX="-tx"
+PERSISTENT=""
+PERSISTENT="-pp"
 
 cpu=$(dspmq -x -m PERF01 | grep PRIMARY | cut -d'(' -f3 | cut -d, -f1)
 
@@ -16,13 +24,10 @@ if ((cpu<0 && cpu>5)); then
   exit 1
 fi
 
-run -cpu=${cpu} cph -vo 4 -ss 10 -ms 2048 -wt 120 -wi 120 -rl 0 ${NUM_MESSAGES} ${DQ_CHANNELS} -tc Requester -to 9999 -iq REQUEST -oq REPLY -db 1 ${NO_OF_QUEUES} -dn 1 -pp -tx -jb PERF01 -jt mqb ${NUM_THREADS}
-
-# run -cpu=${cpu} cph -vo 4 -ss 0 -ms 2048 -rl 60 -tc Requester -iq REQUEST -oq REPLY -db 1 -dx 1 -dn 1 -pp -tx -jb PERF01 -jt mqb -nt 1
-# run -cpu=${cpu} cph -vo 4 -ss 0 -ms 2048 -mg 32768 -tc Requester -iq REQUEST -oq REPLY -db 1 -dx 1 -dn 1 -pp -tx -jb PERF01 -jt mqb -nt 1
-# run -cpu=${cpu} cph -vo 4 -ss 5 -ms 2048 -wt 120 -wi 0 -rl 0 -mg 32 -dq 1 -tc Requester -to 9999 -iq REQUEST -oq REPLY -db 1 -dx 1 -dn 1 -pp -tx -jb PERF01 -jt mqb
-# run -cpu=${cpu} cph -vo 4 -ss 5 -ms 2048 -wt 120 -wi 0 -rl 30          -dq 1 -tc Requester -to 9999 -iq REQUEST -oq REPLY -db 1 -dx  1 -dn 1 -pp -tx -jb PERF01 -jt mqb
-
+## Num message text
+# run -cpu=${cpu} cph -vo 4 -ss 10 -ms 2048 -wt 120 -wi 120 ${NUM_MESSAGES} ${RUN_LENGTH_NOT} ${DQ_CHANNELS} -tc Requester -to 9999 -iq REQUEST -oq REPLY -db 1 ${NO_OF_QUEUES} -dn 1 ${PERSISTENT} ${GLOBAL_TRX} -jb PERF01 -jt mqb ${NUM_THREADS}
+## Runtime length test
+run -cpu=${cpu} cph -vo 4 -ss 10 -ms 2048 -wt 120 -wi 120 ${NUM_MESSAGES} ${RUN_LENGTH_YES} ${DQ_CHANNELS} -tc Requester -to 9999 -iq REQUEST -oq REPLY -db 1 ${NO_OF_QUEUES} -dn 1 ${PERSISTENT} ${GLOBAL_TRX} -jb PERF01 -jt mqb ${NUM_THREADS}
 
 # vo: Verbosity to stdout. Log none = 0. Log all = 4
 # ss: Statistics reporting period. (default: 10)
