@@ -116,6 +116,8 @@ MQWTCLASSDEF(Responder,
   mutable MQIQueue * dummyOut;
 
   inline MQIQueue * getReplyQueue(MQMD const & md);
+
+  unsigned long myIteration;
 )
 
 }

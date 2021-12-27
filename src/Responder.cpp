@@ -124,6 +124,7 @@ MQWTCONSTRUCTOR(Responder, true, true, false), pInQueue(NULL),
     oqCache(&pobj_cmp),
 #endif
     dummyOut(NULL) {
+  myIteration = 0;
   CPHTRACEENTRY(pConfig->pTrc)
 
   if(threadNum==0){
@@ -254,9 +255,16 @@ inline MQIQueue * Responder::getReplyQueue(MQMD const & md){
 void Responder::msgOneIteration(){
   CPHTRACEENTRY(pConfig->pTrc)
 
+  myIteration++;
+
   // Get request message
   MQMD getMD = pOpts->getGetMD();
   getMessage->messageLen = 0;
+
+  if (myIteration < 2)
+    gmo.WaitInterval = MQWI_UNLIMITED;
+  else
+    gmo.WaitInterval = 1000;
 
   pInQueue->get(getMessage, getMD, gmo);
 

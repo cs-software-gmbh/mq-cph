@@ -56,6 +56,8 @@ MQWTCLASSDEF(Requester,
   MQIObject * pOutQueue;
   /*The correlId to associate with messages. This is only needed for when we are using message selectors*/
   MQBYTE24 correlId;
+
+  unsigned long myIteration;
 )
 
 }

@@ -47,6 +47,7 @@ char Requester::iqPrefix[MQ_Q_NAME_LENGTH];
 char Requester::oqPrefix[MQ_Q_NAME_LENGTH];
 
 MQWTCONSTRUCTOR(Requester, true, true, false) {
+  myIteration = 0;
   CPHTRACEENTRY(pConfig->pTrc)
 
   if(threadNum==0){
@@ -157,10 +158,13 @@ void Requester::closeDestination(){
 }
 
 void Requester::msgOneIteration(){
+
   CPHTRACEENTRY(pConfig->pTrc)
   // Put request
 
   CPHTRACEMSG(pConfig->pTrc, "putting to %s now", pOutQueue->getName())
+
+  myIteration++;
 
   pInQueue->put(putMessage, putMD, pmo);
 
@@ -178,6 +182,10 @@ void Requester::msgOneIteration(){
   }
 
   CPHTRACEMSG(pConfig->pTrc, "getting from %s now", pOutQueue->getName())
+  if (myIteration < 2)
+    gmo.WaitInterval = MQWI_UNLIMITED;
+  else
+    gmo.WaitInterval = 1000;
   pOutQueue->get(getMessage, getMD, gmo);
   CPHTRACEMSG(pConfig->pTrc, "got from %s %ld bytes. %s", pOutQueue->getName(), (long)getMessage->messageLen, getMessage->buffer)
 

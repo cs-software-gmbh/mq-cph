@@ -75,8 +75,6 @@ unsigned long ETM_Tried = 0;        /* 0 means haven't tried establish*/
 /*   The Code                                                        */
 /*********************************************************************/
 
-# WIP
-
 static int mqSplitterInit = 0;
 static int logMQApi = 0;
 
@@ -264,9 +262,6 @@ if (logMQApi) printf
    PMQLONG  pCompCode,     /* Completion code */
    PMQLONG  pReason)       /* Reason code qualifying CompCode */
 {
-  MQLONG saveValue = ((MQGMO*)pGetMsgOpts)->WaitInterval;
-  ((MQGMO*)pGetMsgOpts)->WaitInterval = 10000;
-
   if (ETM_DLL_found && ETM_dynamic_MQ_entries.mqget)
   {
     (ETM_dynamic_MQ_entries.mqget)(Hconn,Hobj,pMsgDesc,pGetMsgOpts,BufferLength,
@@ -280,7 +275,6 @@ if (logMQApi) printf
     *pReason   = 6000;
     LOG_MQ_API("MQGET MQRC_LIBRARY_LOAD_ERROR\n");
   }
-  ((MQGMO*)pGetMsgOpts)->WaitInterval = saveValue;
 }
 
 
@@ -368,7 +362,9 @@ if (logMQApi) printf
   {
     (ETM_dynamic_MQ_entries.mqput)(Hconn,Hobj,pMsgDesc,pPutMsgOpts,BufferLength,
                                  pBuffer,pCompCode,pReason);
-    LOG_MQ_API("MQPUT(%p, %p) cc %ld, rc %ld\n", (void*)Hconn, (void*)Hobj, (long)*pCompCode, (long)*pReason);
+    LOG_MQ_API("MQPUT(%p, %p) %s, cc %ld, rc %ld\n", (void*)Hconn, (void*)Hobj,
+      ((((MQMD*)pPutMsgOpts)->Persistence & MQPER_PERSISTENT) == MQPER_PERSISTENT) ? "persistent" : "non-persistent",
+      (long)*pCompCode, (long)*pReason);
   }
   else
   {
@@ -401,7 +397,9 @@ if (logMQApi) printf
   {
     (ETM_dynamic_MQ_entries.mqput1)(Hconn,pObjDesc,pMsgDesc,pPutMsgOpts,BufferLength,
                                  pBuffer,pCompCode,pReason);
-    LOG_MQ_API("MQPUT1(%p, qu %s) cc %ld, rc %ld\n", (void*)Hconn, ((MQOD*)pObjDesc)->ObjectName, (long)*pCompCode, (long)*pReason);
+    LOG_MQ_API("MQPUT1(%p, qu %s) %s, cc %ld, rc %ld\n", (void*)Hconn, ((MQOD*)pObjDesc)->ObjectName,
+      ((((MQMD*)pPutMsgOpts)->Persistence & MQPER_PERSISTENT) == MQPER_PERSISTENT) ? "persistent" : "non-persistent",
+      (long)*pCompCode, (long)*pReason);
   }
   else
   {
