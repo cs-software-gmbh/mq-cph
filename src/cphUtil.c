@@ -51,10 +51,10 @@
 #if defined(AMQ_AS400) || defined(AMQ_MACOS)
 #include <sys/select.h>
 #define SMALLPART tv_usec
+#elif defined(CPH_HPNS)
+#define SMALLPART tv_nsec
 #elif defined(CPH_UNIX)
 #define SMALLPART tv_nsec
-#elif defined(CPH_HPNS)
-#define SMALLPART tv_usec
 #endif
 
 /* Static variable that the controlC handlers sets to tell the rest of the program to close down */
