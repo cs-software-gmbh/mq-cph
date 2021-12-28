@@ -22,9 +22,9 @@ if ((cpu<0 && cpu>5)); then
 fi
 
 ## Num message text
-# run -cpu=${cpu} cph -vo 4 -ss 10 -ms 2048 -wt 120 -wi 120 ${NUM_MESSAGES} ${RUN_LENGTH_NOT} ${DQ_CHANNELS} -tc Requester -to 9999 -iq REQUEST -oq REPLY -db 1 ${NUM_QUEUES} -dn 1 ${PERSISTENT} ${GLOBAL_TRX} -jb PERF01 -jt mqb ${NUM_THREADS}
+run -cpu=${cpu} cph -vo 4 -ss 10 -ms 2048 -wt 120 -wi 120 ${NUM_MESSAGES} ${RUN_LENGTH_NOT} ${DQ_CHANNELS} -tc Requester -to 9999 -iq REQUEST -oq REPLY -db 1 ${NUM_QUEUES} -dn 1 ${PERSISTENT} ${GLOBAL_TRX} -jb PERF01 -jt mqb ${NUM_THREADS}
 ## Runtime length test
-run -cpu=${cpu} cph -vo 4 -ss 10 -ms 2048 -wt 120 -wi 120 ${NUM_MESSAGES} ${RUN_LENGTH_YES} ${DQ_CHANNELS} -tc Requester -to 9999 -iq REQUEST -oq REPLY -db 1 ${NUM_QUEUES} -dn 1 ${PERSISTENT} ${GLOBAL_TRX} -jb PERF01 -jt mqb ${NUM_THREADS}
+# run -cpu=${cpu} cph -vo 4 -ss 10 -ms 2048 -wt 120 -wi 120 ${NUM_MESSAGES} ${RUN_LENGTH_YES} ${DQ_CHANNELS} -tc Requester -to 9999 -iq REQUEST -oq REPLY -db 1 ${NUM_QUEUES} -dn 1 ${PERSISTENT} ${GLOBAL_TRX} -jb PERF01 -jt mqb ${NUM_THREADS}
 
 # vo: Verbosity to stdout. Log none = 0. Log all = 4
 # ss: Statistics reporting period. (default: 10)

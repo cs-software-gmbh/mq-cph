@@ -21,9 +21,9 @@ if ((cpu<0 && cpu>5)); then
 fi
 
 ## Num message text
-# run -cpu=${cpu} cph -vo 4 -ss 0 -ms 2048 ${NUM_MESSAGES} ${RUN_LENGTH_NOT} -tc Responder -iq REQUEST -oq REPLY -cr -to -1 -db 1 ${NUM_QUEUES} -dn 1 ${PERSISTENT} ${GLOBAL_TRX} -jb PERF01 -jt mqb ${NUM_THREADS}
+run -cpu=${cpu} cph -vo 4 -ss 0 -ms 2048 ${NUM_MESSAGES} ${RUN_LENGTH_NOT} -tc Responder -iq REQUEST -oq REPLY -cr -to -1 -db 1 ${NUM_QUEUES} -dn 1 ${PERSISTENT} ${GLOBAL_TRX} -jb PERF01 -jt mqb ${NUM_THREADS}
 ## Runtime length test
-run -cpu=${cpu} cph -vo 4 -ss 0 -ms 2048 ${NUM_MESSAGES} ${RUN_LENGTH_YES} -tc Responder -iq REQUEST -oq REPLY -cr -to -1 -db 1 ${NUM_QUEUES} -dn 1 ${PERSISTENT} ${GLOBAL_TRX} -jb PERF01 -jt mqb ${NUM_THREADS}
+# run -cpu=${cpu} cph -vo 4 -ss 0 -ms 2048 ${NUM_MESSAGES} ${RUN_LENGTH_YES} -tc Responder -iq REQUEST -oq REPLY -cr -to -1 -db 1 ${NUM_QUEUES} -dn 1 ${PERSISTENT} ${GLOBAL_TRX} -jb PERF01 -jt mqb ${NUM_THREADS}
 
 # vo: Verbosity to stdout. Log none = 0. Log all = 4
 # ss: Statistics reporting period. (default: 10)
