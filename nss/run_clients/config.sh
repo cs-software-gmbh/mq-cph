@@ -1,7 +1,6 @@
 #!/bin/bash
 
-# Flag to create trace output
-# TRACE_FLAG=-tr
+TRACE_FLAG=-tr
 
 #REQUESTER_QM = the CLIENT_QM in the setup
 #RESPONDER_QM = the SERVER_QM in the setup
@@ -12,11 +11,12 @@ RESPONDER_QM=PERF0
 #The four settings below are only required for client mode tests
 REQUESTER_QM_HOST=cs5
 RESPONDER_QM_HOST=cs5
-REQUESTER_QM_LISTENER_PORT=1501
-RESPONDER_QM_LISTENER_PORT=1500
+REQUESTER_QM_LISTENER_PORT=31414
+RESPONDER_QM_LISTENER_PORT=31415
 
 MESSAGE_SIZE=2048
-NO_OF_QUEUES=10
+NUMBER_MESSAGES=4096
+NO_OF_QUEUES=21
 
 #If running cph clients then DQ_CHANNELS must match DQ_CHANNELS value used during setup.
 DQ_CHANNELS=1
