@@ -75,7 +75,16 @@ include solaris.mk
 endif
 
 ifeq ($(OSTYPE),NONSTOP_KERNEL)
-include nonstop_kernel.mk
+	SYSTYPE = $(shell uname -m)
+	ifeq ($(SYSTYPE),NSE-AG)
+		include nonstop_kernel_nse.mk
+	endif
+		ifeq ($(SYSTYPE),NSV-I)
+		include nonstop_kernel_nsx.mk
+	endif
+		ifeq ($(SYSTYPE),NSX-G)
+		include nonstop_kernel_nsx.mk
+	endif
 endif
 
 $(info CC=${cc})
